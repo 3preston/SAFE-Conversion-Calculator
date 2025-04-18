@@ -11,8 +11,9 @@ import { Plus, X } from "lucide-react";
 type SafeInput = {
   id: string;
   investorName: string;
-  type: 'valuationCap' | 'mfn';
+  type: 'valuationCap' | 'discount' | 'mfn';
   valuationCap?: number;
+  discountRate?: number;
   investmentAmount: number;
   companyValuation: number;
 };
@@ -23,13 +24,15 @@ const SafeConverter = () => {
   const addSafeInput = (type: SafeInput['type']) => {
     const newSafeInput: SafeInput = {
       id: Math.random().toString(36).substring(7),
-      investorName: 'Investor Name',
+      investorName: `Investor ${safeInputs.length + 1}`,
       type,
       investmentAmount: 100000,
       companyValuation: 5000000,
     };
     if (type === 'valuationCap') {
       newSafeInput.valuationCap = 1000000;
+    } else if (type === 'discount') {
+      newSafeInput.discountRate = 0.2;
     }
     setSafeInputs([...safeInputs, newSafeInput]);
   };
@@ -64,10 +67,10 @@ const SafeConverter = () => {
     return value.toLocaleString('en-US');
   };
 
-  const parseNumber = (value: string): number | undefined => {
-    const parsed = Number(value.replace(/[^0-9.-]+/g, ''));
-    return isNaN(parsed) ? undefined : parsed;
-  };
+    const parseNumber = (value: string): number | undefined => {
+        const parsed = Number(value.replace(/[^0-9.-]+/g, ''));
+        return isNaN(parsed) ? undefined : parsed;
+    };
 
   const calculateProjection = (safeInput: SafeInput) => {
     switch (safeInput.type) {
@@ -75,6 +78,10 @@ const SafeConverter = () => {
         // Post-money SAFE: investmentAmount / valuationCap * (companyValuation + investmentAmount) / companyValuation * 100
         if (!safeInput.valuationCap || !safeInput.companyValuation) return 0;
         return (safeInput.investmentAmount / safeInput.valuationCap) * ((safeInput.companyValuation + safeInput.investmentAmount) / safeInput.companyValuation) * 100;
+      case 'discount':
+        if (!safeInput.discountRate || !safeInput.companyValuation) return 0;
+        const discountedValuation = safeInput.companyValuation * (1 - safeInput.discountRate);
+        return (safeInput.investmentAmount / discountedValuation) * 100;
       case 'mfn':
         if (!safeInput.companyValuation) return 0;
         return (safeInput.investmentAmount / safeInput.companyValuation) * 100;
@@ -104,22 +111,39 @@ const SafeConverter = () => {
                   onChange={(e) => updateSafeInput(safeInput.id, { investorName: e.target.value })}
                   className="bg-input border rounded-md focus:ring-accent focus:border-accent"
                 />
-                {safeInput.type === 'valuationCap' && (
+                {(safeInput.type === 'valuationCap' || safeInput.type === 'discount') && (
                   <>
                     <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <Label htmlFor={`valuationCap-${safeInput.id}`}>Valuation Cap</Label>
-                        <Input
-                          type="text"
-                          id={`valuationCap-${safeInput.id}`}
-                          value={formatAsCurrency(safeInput.valuationCap)}
-                          onChange={(e) => {
-                            const parsedValue = parseNumber(e.target.value);
-                            updateSafeInput(safeInput.id, { valuationCap: parsedValue });
-                          }}
-                          className="bg-input border rounded-md focus:ring-accent focus:border-accent"
-                        />
-                      </div>
+                      {safeInput.type === 'valuationCap' && (
+                        <div>
+                          <Label htmlFor={`valuationCap-${safeInput.id}`}>Valuation Cap</Label>
+                          <Input
+                            type="text"
+                            id={`valuationCap-${safeInput.id}`}
+                            value={formatAsCurrency(safeInput.valuationCap)}
+                            onChange={(e) => {
+                              const parsedValue = parseNumber(e.target.value);
+                              updateSafeInput(safeInput.id, { valuationCap: parsedValue });
+                            }}
+                            className="bg-input border rounded-md focus:ring-accent focus:border-accent"
+                          />
+                        </div>
+                      )}
+                      {safeInput.type === 'discount' && (
+                        <div>
+                          <Label htmlFor={`discountRate-${safeInput.id}`}>Discount Rate</Label>
+                          <Input
+                            type="text"
+                            id={`discountRate-${safeInput.id}`}
+                            value={(safeInput.discountRate ?? 0).toString()}
+                            onChange={(e) => {
+                              const parsedValue = parseNumber(e.target.value);
+                              updateSafeInput(safeInput.id, { discountRate: parsedValue });
+                            }}
+                            className="bg-input border rounded-md focus:ring-accent focus:border-accent"
+                          />
+                        </div>
+                      )}
                       <div>
                         <Label htmlFor={`investmentAmount-${safeInput.id}`}>Investment Amount</Label>
                         <Input
@@ -140,9 +164,9 @@ const SafeConverter = () => {
                       id={`companyValuation-${safeInput.id}`}
                       value={formatAsCurrency(safeInput.companyValuation)}
                       onChange={(e) => {
-                            const parsedValue = parseNumber(e.target.value);
-                            updateSafeInput(safeInput.id, { companyValuation: parsedValue });
-                          }}
+                        const parsedValue = parseNumber(e.target.value);
+                        updateSafeInput(safeInput.id, { companyValuation: parsedValue });
+                      }}
                       className="bg-input border rounded-md focus:ring-accent focus:border-accent"
                     />
                   </>
@@ -156,7 +180,7 @@ const SafeConverter = () => {
                           type="text"
                           id={`investmentAmount-${safeInput.id}`}
                           value={formatAsCurrency(safeInput.investmentAmount)}
-                           onChange={(e) => {
+                          onChange={(e) => {
                             const parsedValue = parseNumber(e.target.value);
                             updateSafeInput(safeInput.id, { investmentAmount: parsedValue });
                           }}
@@ -169,7 +193,7 @@ const SafeConverter = () => {
                           type="text"
                           id={`companyValuation-${safeInput.id}`}
                           value={formatAsCurrency(safeInput.companyValuation)}
-                           onChange={(e) => {
+                          onChange={(e) => {
                             const parsedValue = parseNumber(e.target.value);
                             updateSafeInput(safeInput.id, { companyValuation: parsedValue });
                           }}
@@ -193,6 +217,9 @@ const SafeConverter = () => {
       <div className="flex justify-center space-x-4">
         <Button onClick={() => addSafeInput('valuationCap')} className="bg-accent text-accent-foreground hover:bg-accent-foreground hover:text-accent rounded-full">
           <Plus className="h-4 w-4 mr-2" /> Valuation Cap SAFE
+        </Button>
+        <Button onClick={() => addSafeInput('discount')} className="bg-accent text-accent-foreground hover:bg-accent-foreground hover:text-accent rounded-full">
+          <Plus className="h-4 w-4 mr-2" /> Discount SAFE
         </Button>
         <Button onClick={() => addSafeInput('mfn')} className="bg-accent text-accent-foreground hover:bg-accent-foreground hover:text-accent rounded-full">
           <Plus className="h-4 w-4 mr-2" /> MFN SAFE
