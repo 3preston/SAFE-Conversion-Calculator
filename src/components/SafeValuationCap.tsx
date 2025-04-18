@@ -6,13 +6,24 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 
 type SafeValuationCapProps = {
+  valuationCap?: number;
+  investmentAmount: number;
+  companyValuation: number;
   setProjection: (projection: number | null) => void;
+  onValuationCapChange: (value: number) => void;
+  onInvestmentAmountChange: (value: number) => void;
+  onCompanyValuationChange: (value: number) => void;
 };
 
-const SafeValuationCap = ({ setProjection }: SafeValuationCapProps) => {
-  const [valuationCap, setValuationCap] = useState<number>(1000000);
-  const [investmentAmount, setInvestmentAmount] = useState<number>(100000);
-  const [companyValuation, setCompanyValuation] = useState<number>(5000000);
+const SafeValuationCap = ({
+  valuationCap = 1000000,
+  investmentAmount,
+  companyValuation,
+  setProjection,
+  onValuationCapChange,
+  onInvestmentAmountChange,
+  onCompanyValuationChange,
+}: SafeValuationCapProps) => {
 
   const calculateProjection = () => {
     const projection = (investmentAmount / valuationCap) * 100;
@@ -27,7 +38,7 @@ const SafeValuationCap = ({ setProjection }: SafeValuationCapProps) => {
           type="number"
           id="valuationCap"
           value={valuationCap}
-          onChange={(e) => setValuationCap(Number(e.target.value))}
+          onChange={(e) => onValuationCapChange(Number(e.target.value))}
         />
       </div>
       <div>
@@ -36,7 +47,7 @@ const SafeValuationCap = ({ setProjection }: SafeValuationCapProps) => {
           type="number"
           id="investmentAmount"
           value={investmentAmount}
-          onChange={(e) => setInvestmentAmount(Number(e.target.value))}
+          onChange={(e) => onInvestmentAmountChange(Number(e.target.value))}
         />
       </div>
       <div>
@@ -45,7 +56,7 @@ const SafeValuationCap = ({ setProjection }: SafeValuationCapProps) => {
           type="number"
           id="companyValuation"
           value={companyValuation}
-          onChange={(e) => setCompanyValuation(Number(e.target.value))}
+          onChange={(e) => onCompanyValuationChange(Number(e.target.value))}
         />
       </div>
       <Button onClick={calculateProjection} className="bg-accent text-accent-foreground">

@@ -7,61 +7,129 @@ import SafeValuationCap from './SafeValuationCap';
 import SafeDiscount from './SafeDiscount';
 import SafeMFN from './SafeMFN';
 import { cn } from '@/lib/utils';
+import { Button } from './ui/button';
+
+type SafeInput = {
+  type: 'valuationCap' | 'discount' | 'mfn';
+  valuationCap?: number;
+  discountRate?: number;
+  investmentAmount: number;
+  companyValuation: number;
+};
 
 const SafeConverter = () => {
+  const [safeInputs, setSafeInputs] = useState<SafeInput[]>([
+    { type: 'valuationCap', investmentAmount: 100000, companyValuation: 5000000, valuationCap: 1000000 },
+    { type: 'discount', investmentAmount: 100000, companyValuation: 5000000, discountRate: 0.2 },
+    { type: 'mfn', investmentAmount: 100000, companyValuation: 5000000 },
+  ]);
+
   const [valuationCapProjection, setValuationCapProjection] = useState<number | null>(null);
   const [discountProjection, setDiscountProjection] = useState<number | null>(null);
   const [mfnProjection, setMfnProjection] = useState<number | null>(null);
 
+  const addSafeInput = (type: SafeInput['type']) => {
+    const newSafeInput: SafeInput = { type, investmentAmount: 100000, companyValuation: 5000000 };
+    if (type === 'valuationCap') {
+      newSafeInput.valuationCap = 1000000;
+    } else if (type === 'discount') {
+      newSafeInput.discountRate = 0.2;
+    }
+    setSafeInputs([...safeInputs, newSafeInput]);
+  };
+
+  const updateSafeInput = (index: number, updatedInput: Partial<SafeInput>) => {
+    const newSafeInputs = [...safeInputs];
+    newSafeInputs[index] = { ...newSafeInputs[index], ...updatedInput };
+    setSafeInputs(newSafeInputs);
+  };
+
+  const calculateProjection = (safeInput: SafeInput) => {
+    switch (safeInput.type) {
+      case 'valuationCap':
+        return (safeInput.investmentAmount / (safeInput.valuationCap || 1)) * 100;
+      case 'discount':
+        return (safeInput.investmentAmount / (safeInput.companyValuation * (1 - (safeInput.discountRate || 0)))) * 100;
+      case 'mfn':
+        return (safeInput.investmentAmount / safeInput.companyValuation) * 100;
+      default:
+        return 0;
+    }
+  };
+
   return (
     <div className="container py-10">
-      <Tabs defaultValue="valuationCap" className="w-[400px]">
-        <TabsList>
-          <TabsTrigger value="valuationCap">Valuation Cap</TabsTrigger>
-          <TabsTrigger value="discount">Discount</TabsTrigger>
-          <TabsTrigger value="mfn">MFN</TabsTrigger>
-        </TabsList>
-        <TabsContent value="valuationCap" className="space-y-2">
-          <SafeValuationCap setProjection={setValuationCapProjection} />
-          {valuationCapProjection !== null && (
+      {safeInputs.map((safeInput, index) => (
+        <Card key={index} className="w-[400px] mb-4">
+          <CardHeader>
+            <CardTitle>SAFE Type: {safeInput.type}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {safeInput.type === 'valuationCap' && (
+              <SafeValuationCap
+                valuationCap={safeInput.valuationCap}
+                investmentAmount={safeInput.investmentAmount}
+                companyValuation={safeInput.companyValuation}
+                onValuationCapChange={(value) => updateSafeInput(index, { valuationCap: value })}
+                onInvestmentAmountChange={(value) => updateSafeInput(index, { investmentAmount: value })}
+                onCompanyValuationChange={(value) => updateSafeInput(index, { companyValuation: value })}
+                setProjection={(projection) => {
+                  setValuationCapProjection(projection);
+                }}
+              />
+            )}
+            {safeInput.type === 'discount' && (
+              <SafeDiscount
+                discountRate={safeInput.discountRate}
+                investmentAmount={safeInput.investmentAmount}
+                companyValuation={safeInput.companyValuation}
+                onDiscountRateChange={(value) => updateSafeInput(index, { discountRate: value })}
+                onInvestmentAmountChange={(value) => updateSafeInput(index, { investmentAmount: value })}
+                onCompanyValuationChange={(value) => updateSafeInput(index, { companyValuation: value })}
+                setProjection={(projection) => {
+                  setDiscountProjection(projection);
+                }}
+              />
+            )}
+            {safeInput.type === 'mfn' && (
+              <SafeMFN
+                investmentAmount={safeInput.investmentAmount}
+                companyValuation={safeInput.companyValuation}
+                onInvestmentAmountChange={(value) => updateSafeInput(index, { investmentAmount: value })}
+                onCompanyValuationChange={(value) => updateSafeInput(index, { companyValuation: value })}
+                setProjection={(projection) => {
+                  setMfnProjection(projection);
+                }}
+              />
+            )}
             <div>
-              <p>Projected Equity: {valuationCapProjection.toFixed(2)}%</p>
+              <p>Projected Equity: {calculateProjection(safeInput).toFixed(2)}%</p>
             </div>
-          )}
-        </TabsContent>
-        <TabsContent value="discount" className="space-y-2">
-          <SafeDiscount setProjection={setDiscountProjection} />
-          {discountProjection !== null && (
-            <div>
-              <p>Projected Equity: {discountProjection.toFixed(2)}%</p>
-            </div>
-          )}
-        </TabsContent>
-        <TabsContent value="mfn" className="space-y-2">
-          <SafeMFN setProjection={setMfnProjection} />
-          {mfnProjection !== null && (
-            <div>
-              <p>Projected Equity: {mfnProjection.toFixed(2)}%</p>
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
+          </CardContent>
+        </Card>
+      ))}
 
-      {(valuationCapProjection !== null || discountProjection !== null || mfnProjection !== null) && (
+      <Button onClick={() => addSafeInput('valuationCap')} className="bg-accent text-accent-foreground">
+        Add Valuation Cap SAFE
+      </Button>
+      <Button onClick={() => addSafeInput('discount')} className="bg-accent text-accent-foreground">
+        Add Discount SAFE
+      </Button>
+      <Button onClick={() => addSafeInput('mfn')} className="bg-accent text-accent-foreground">
+        Add MFN SAFE
+      </Button>
+
+      {safeInputs.length > 0 && (
         <Card className="w-[400px] mt-4">
           <CardHeader>
             <CardTitle>Comparative Summary</CardTitle>
           </CardHeader>
           <CardContent>
-            {valuationCapProjection !== null && (
-              <p>Valuation Cap: {valuationCapProjection.toFixed(2)}%</p>
-            )}
-            {discountProjection !== null && (
-              <p>Discount: {discountProjection.toFixed(2)}%</p>
-            )}
-            {mfnProjection !== null && (
-              <p>MFN: {mfnProjection.toFixed(2)}%</p>
-            )}
+            {safeInputs.map((safeInput, index) => (
+              <p key={index}>
+                {safeInput.type}: {calculateProjection(safeInput).toFixed(2)}%
+              </p>
+            ))}
           </CardContent>
         </Card>
       )}
