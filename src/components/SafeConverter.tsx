@@ -73,7 +73,8 @@ const SafeConverter = () => {
   const calculateProjection = (safeInput: SafeInput) => {
     switch (safeInput.type) {
       case 'valuationCap':
-        return (safeInput.investmentAmount / (safeInput.valuationCap || 1)) * 100;
+        // Post-money SAFE: investmentAmount / valuationCap * (companyValuation + investmentAmount) / companyValuation * 100
+        return (safeInput.investmentAmount / (safeInput.valuationCap || 1)) * ((safeInput.companyValuation + safeInput.investmentAmount) / safeInput.companyValuation) * 100;
       case 'discount':
         return (safeInput.investmentAmount / (safeInput.companyValuation * (1 - (safeInput.discountRate || 0)))) * 100;
       case 'mfn':
