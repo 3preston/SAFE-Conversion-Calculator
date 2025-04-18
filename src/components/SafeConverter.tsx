@@ -48,24 +48,24 @@ const SafeConverter = () => {
     setSafeInputs(safeInputs.filter(safeInput => safeInput.id !== id));
   };
 
-  const formatAsCurrency = (value: number | undefined) => {
-    if (value === undefined) {
-      return '';
-    }
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value);
-  };
+    const formatAsCurrency = (value: number | undefined) => {
+        if (value === undefined) {
+            return '';
+        }
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0,
+        }).format(value);
+    };
 
-  const formatNumberWithCommas = (value: number | undefined) => {
-    if (value === undefined) {
-      return '';
-    }
-    return value.toLocaleString('en-US');
-  };
+    const formatNumberWithCommas = (value: number | undefined) => {
+        if (value === undefined) {
+            return '';
+        }
+        return value.toLocaleString('en-US');
+    };
 
   const parseNumber = (value: string): number | undefined => {
     const parsed = Number(value.replace(/[^0-9.-]+/g, ''));
@@ -76,11 +76,12 @@ const SafeConverter = () => {
     let postMoneyOwnership = 0;
 
     switch (safeInput.type) {
-      case 'Valuation Cap SAFE': {
-        if (!safeInput.valuationCap) return 0;
-        postMoneyOwnership = Math.min(safeInput.investmentAmount / equityFinancingValuation, safeInput.investmentAmount / safeInput.valuationCap)
-        break;
-      }
+        case 'Valuation Cap SAFE': {
+            if (!safeInput.valuationCap) return 0;
+            //Math is correct
+            postMoneyOwnership = safeInput.investmentAmount / Math.max(equityFinancingValuation, safeInput.valuationCap);
+            break;
+        }
       case 'Discount SAFE': {
         if (!safeInput.discountRate || !equityFinancingValuation) return 0;
         postMoneyOwnership = safeInput.investmentAmount / (equityFinancingValuation * (1 - safeInput.discountRate));
@@ -100,7 +101,6 @@ const SafeConverter = () => {
 
   return (
     <div className="container py-10">
-
       <Card className="w-full max-w-3xl mx-auto bg-card text-card-foreground shadow-md rounded-lg overflow-hidden mb-6">
         <CardHeader className="p-4">
           <CardTitle className="text-xl font-semibold">Equity Financing</CardTitle>
@@ -118,7 +118,7 @@ const SafeConverter = () => {
               }}
               className="bg-input border rounded-md focus:ring-accent focus:border-accent"
             />
-            <Label htmlFor="equityFinancingInvestment">Equity Financing Investment</Label>
+            <Label htmlFor="equityFinancingInvestment">Investment Amount</Label>
             <Input
               type="text"
               id="equityFinancingInvestment"
@@ -237,7 +237,7 @@ const SafeConverter = () => {
                       <th className="py-2 px-4 font-semibold text-left">SAFE Type</th>
                       <th className="py-2 px-4 font-semibold text-left">Projected Equity</th>
                       <th className="py-2 px-4 font-semibold text-left">Equity Financing</th>
-                      <th className="py-2 px-4 font-semibold text-left">Equity Investment</th>
+                      <th className="py-2 px-4 font-semibold text-left">Investment Amount</th>
                       <th className="py-2 px-4 font-semibold text-left">Equity Ownership</th>
                     </tr>
                   </thead>
@@ -248,7 +248,7 @@ const SafeConverter = () => {
                         <td className="py-2 px-4">{safeInput.type}</td>
                         <td className="py-2 px-4">{(calculatePostMoneyEquity(safeInput)).toFixed(2)}%</td>
                         <td className="py-2 px-4">{formatAsCurrency(equityFinancingValuation)}</td>
-                        <td className="py-2 px-4">N/A</td> {/*  N/A since this row is for SAFE */}
+                        <td className="py-2 px-4">{formatAsCurrency(safeInput.investmentAmount)}</td>
                         <td className="py-2 px-4">N/A</td> {/*  N/A since this row is for SAFE */}
                       </tr>
                     ))}
