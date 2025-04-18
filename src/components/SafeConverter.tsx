@@ -11,7 +11,7 @@ import { Plus, X } from "lucide-react";
 type SafeInput = {
   id: string;
   investorName: string;
-  type: 'valuationCap' | 'discount' | 'mfn';
+  type: 'Valuation Cap' | 'Discount' | 'Most Favored Nations';
   valuationCap?: number;
   discountRate?: number;
   investmentAmount: number;
@@ -28,9 +28,9 @@ const SafeConverter = () => {
       type,
       investmentAmount: 100000,
     };
-    if (type === 'valuationCap') {
+    if (type === 'Valuation Cap') {
       newSafeInput.valuationCap = 1000000;
-    } else if (type === 'discount') {
+    } else if (type === 'Discount') {
       newSafeInput.discountRate = 0.2;
     }
     setSafeInputs([...safeInputs, newSafeInput]);
@@ -72,31 +72,29 @@ const SafeConverter = () => {
   };
 
   const calculateProjection = (safeInput: SafeInput) => {
-      switch (safeInput.type) {
-          case 'valuationCap': {
-              if (!safeInput.valuationCap || !companyValuation) return 0;
+    let ownership = 0;
 
-              // YC Valuation Cap Safe: Ownership = Investment / Valuation Cap
-              const ownership = safeInput.investmentAmount / safeInput.valuationCap;
-              return ownership * 100;
-          }
-          case 'discount': {
-              if (!safeInput.discountRate || !companyValuation) return 0;
-
-              // YC Discount Safe: Ownership = Investment / (Company Valuation * (1 - Discount))
-              const discountedValuation = companyValuation * (1 - safeInput.discountRate);
-              const ownership = safeInput.investmentAmount / discountedValuation;
-              return ownership * 100;
-          }
-          case 'mfn': {
-              if (!companyValuation) return 0;
-              // MFN SAFE: Ownership = Investment / Company Valuation
-              const ownership = safeInput.investmentAmount / companyValuation;
-              return ownership * 100;
-          }
-          default:
-              return 0;
+    switch (safeInput.type) {
+      case 'Valuation Cap': {
+        if (!safeInput.valuationCap) return 0;
+        ownership = safeInput.investmentAmount / safeInput.valuationCap;
+        break;
       }
+      case 'Discount': {
+        if (!safeInput.discountRate || !companyValuation) return 0;
+        ownership = safeInput.investmentAmount / (companyValuation * (1 - safeInput.discountRate));
+        break;
+      }
+      case 'Most Favored Nations': {
+        if (!companyValuation) return 0;
+        ownership = safeInput.investmentAmount / companyValuation;
+        break;
+      }
+      default:
+        return 0;
+    }
+
+    return ownership * 100;
   };
 
   return (
@@ -142,10 +140,10 @@ const SafeConverter = () => {
                   onChange={(e) => updateSafeInput(safeInput.id, { investorName: e.target.value })}
                   className="bg-input border rounded-md focus:ring-accent focus:border-accent"
                 />
-                {(safeInput.type === 'valuationCap' || safeInput.type === 'discount') && (
+                {(safeInput.type === 'Valuation Cap' || safeInput.type === 'Discount') && (
                   <>
                     <div className="grid grid-cols-1 gap-2">
-                      {safeInput.type === 'valuationCap' && (
+                      {safeInput.type === 'Valuation Cap' && (
                         <div>
                           <Label htmlFor={`valuationCap-${safeInput.id}`}>Valuation Cap</Label>
                           <Input
@@ -160,7 +158,7 @@ const SafeConverter = () => {
                           />
                         </div>
                       )}
-                      {safeInput.type === 'discount' && (
+                      {safeInput.type === 'Discount' && (
                         <div>
                           <Label htmlFor={`discountRate-${safeInput.id}`}>Discount Rate</Label>
                           <Input
@@ -191,7 +189,7 @@ const SafeConverter = () => {
                     </div>
                   </>
                 )}
-                {safeInput.type === 'mfn' && (
+                {safeInput.type === 'Most Favored Nations' && (
                   <>
                     <div className="grid grid-cols-1 gap-2">
                       <div>
@@ -222,14 +220,14 @@ const SafeConverter = () => {
       <Separator className="my-6" />
 
       <div className="flex justify-center space-x-4">
-        <Button onClick={() => addSafeInput('valuationCap')} className="bg-accent text-accent-foreground hover:bg-accent-foreground hover:text-accent rounded-full">
+        <Button onClick={() => addSafeInput('Valuation Cap')} className="bg-accent text-accent-foreground hover:bg-accent-foreground hover:text-accent rounded-full">
           <Plus className="h-4 w-4 mr-2" /> Valuation Cap SAFE
         </Button>
-        <Button onClick={() => addSafeInput('discount')} className="bg-accent text-accent-foreground hover:bg-accent-foreground hover:text-accent rounded-full">
+        <Button onClick={() => addSafeInput('Discount')} className="bg-accent text-accent-foreground hover:bg-accent-foreground hover:text-accent rounded-full">
           <Plus className="h-4 w-4 mr-2" /> Discount SAFE
         </Button>
-        <Button onClick={() => addSafeInput('mfn')} className="bg-accent text-accent-foreground hover:bg-accent-foreground hover:text-accent rounded-full">
-          <Plus className="h-4 w-4 mr-2" /> MFN SAFE
+        <Button onClick={() => addSafeInput('Most Favored Nations')} className="bg-accent text-accent-foreground hover:bg-accent-foreground hover:text-accent rounded-full">
+          <Plus className="h-4 w-4 mr-2" /> Most Favored Nations SAFE
         </Button>
       </div>
 
