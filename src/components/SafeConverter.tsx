@@ -99,7 +99,7 @@ const SafeConverter = () => {
 
       <Card className="w-full max-w-3xl mx-auto bg-card text-card-foreground shadow-md rounded-lg overflow-hidden mb-6">
         <CardHeader className="p-4">
-          <CardTitle className="text-xl font-semibold">Global Settings</CardTitle>
+          <CardTitle className="text-xl font-semibold">Equity Financing</CardTitle>
         </CardHeader>
         <CardContent className="p-4">
           <div className="grid gap-4">
