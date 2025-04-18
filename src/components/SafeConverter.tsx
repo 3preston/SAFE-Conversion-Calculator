@@ -76,7 +76,13 @@ const SafeConverter = () => {
         // Post-money SAFE: investmentAmount / valuationCap * (companyValuation + investmentAmount) / companyValuation * 100
         return (safeInput.investmentAmount / (safeInput.valuationCap || 1)) * ((safeInput.companyValuation + safeInput.investmentAmount) / safeInput.companyValuation) * 100;
       case 'discount':
-        return (safeInput.investmentAmount / (safeInput.companyValuation * (1 - (safeInput.discountRate || 0)))) * 100;
+           // Determine effective valuation by considering both discount rate and valuation cap (if present)
+          let effectiveValuation = safeInput.companyValuation * (1 - (safeInput.discountRate || 0));
+          if (safeInput.valuationCap && effectiveValuation > safeInput.valuationCap) {
+              effectiveValuation = safeInput.valuationCap; // Apply valuation cap if lower
+          }
+          // Calculate ownership percentage based on the effective valuation
+          return (safeInput.investmentAmount / effectiveValuation) * 100;
       case 'mfn':
         return (safeInput.investmentAmount / safeInput.companyValuation) * 100;
       default:
@@ -178,6 +184,19 @@ const SafeConverter = () => {
                           }}
                       className="bg-input border rounded-md focus:ring-accent focus:border-accent"
                     />
+                     <div>
+                        <Label htmlFor={`valuationCap-${safeInput.id}`}>Valuation Cap</Label>
+                        <Input
+                          type="text"
+                          id={`valuationCap-${safeInput.id}`}
+                          value={formatAsCurrency(safeInput.valuationCap)}
+                          onChange={(e) => {
+                            const parsedValue = parseNumber(e.target.value);
+                            updateSafeInput(safeInput.id, { valuationCap: parsedValue });
+                          }}
+                          className="bg-input border rounded-md focus:ring-accent focus:border-accent"
+                        />
+                      </div>
                   </>
                 )}
                 {safeInput.type === 'mfn' && (
