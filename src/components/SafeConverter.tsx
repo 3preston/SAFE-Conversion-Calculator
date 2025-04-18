@@ -32,7 +32,7 @@ const SafeConverter = () => {
     if (type === 'Valuation Cap SAFE') {
       newSafeInput.valuationCap = 1000000;
     } else if (type === 'Discount SAFE') {
-      newSafeInput.discountRate = 0.2;
+      newSafeInput.discountRate = 20;
     }
     setSafeInputs([...safeInputs, newSafeInput]);
   };
@@ -73,21 +73,21 @@ const SafeConverter = () => {
   };
 
   const calculatePostMoneyEquity = (safeInput: SafeInput) => {
-    let postMoneyOwnership = 0;
-
     if (!equityFinancingValuation || !equityFinancingInvestment) {
       return 0;
     }
 
-    let effectiveValuation = equityFinancingValuation;
+    let effectiveValuation: number;
+    let postMoneyOwnership: number;
 
-    if (safeInput.type === 'Valuation Cap SAFE' && safeInput.valuationCap) {
-        effectiveValuation = Math.min(equityFinancingValuation, safeInput.valuationCap);
-        postMoneyOwnership = (safeInput.investmentAmount / effectiveValuation) * 100;
-    } else if (safeInput.type === 'Discount SAFE' && safeInput.discountRate) {
-      effectiveValuation = equityFinancingValuation;
-      postMoneyOwnership = (safeInput.investmentAmount / (equityFinancingValuation * (1 - safeInput.discountRate))) * 100;
-    } else {
+    if (safeInput.type === 'Valuation Cap SAFE' && safeInput.valuationCap !== undefined) {
+      effectiveValuation = Math.min(equityFinancingValuation, safeInput.valuationCap);
+      postMoneyOwnership = (safeInput.investmentAmount / effectiveValuation) * 100;
+    } else if (safeInput.type === 'Discount SAFE' && safeInput.discountRate !== undefined) {
+        effectiveValuation = equityFinancingValuation;
+        postMoneyOwnership = (safeInput.investmentAmount / (equityFinancingValuation * (1 - (safeInput.discountRate / 100)))) * 100;
+    }
+    else {
       postMoneyOwnership = (safeInput.investmentAmount / equityFinancingValuation) * 100;
     }
 
@@ -234,7 +234,6 @@ const SafeConverter = () => {
                     <tr className="bg-secondary text-secondary-foreground">
                       <th className="py-2 px-4 font-semibold text-left">Investor Name</th>
                       <th className="py-2 px-4 font-semibold text-left">SAFE Type</th>
-                      {/*<th className="py-2 px-4 font-semibold text-left">Equity Post Conversion</th>*/}
                       <th className="py-2 px-4 font-semibold text-left">Equity Post Conversion</th>
                       <th className="py-2 px-4 font-semibold text-left">Equity Financing Valuation</th>
                       <th className="py-2 px-4 font-semibold text-left">Investment Amount</th>
