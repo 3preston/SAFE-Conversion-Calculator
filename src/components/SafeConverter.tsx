@@ -10,9 +10,9 @@ import { Plus, X } from "lucide-react";
 
 type SafeInput = {
   id: string;
-  type: 'valuationCap' | 'discount' | 'mfn';
+  investorName: string;
+  type: 'valuationCap' | 'mfn';
   valuationCap?: number;
-  discountRate?: number;
   investmentAmount: number;
   companyValuation: number;
 };
@@ -23,14 +23,13 @@ const SafeConverter = () => {
   const addSafeInput = (type: SafeInput['type']) => {
     const newSafeInput: SafeInput = {
       id: Math.random().toString(36).substring(7),
+      investorName: 'Investor Name',
       type,
       investmentAmount: 100000,
       companyValuation: 5000000,
     };
     if (type === 'valuationCap') {
       newSafeInput.valuationCap = 1000000;
-    } else if (type === 'discount') {
-      newSafeInput.discountRate = 0.2;
     }
     setSafeInputs([...safeInputs, newSafeInput]);
   };
@@ -76,11 +75,6 @@ const SafeConverter = () => {
         // Post-money SAFE: investmentAmount / valuationCap * (companyValuation + investmentAmount) / companyValuation * 100
         if (!safeInput.valuationCap || !safeInput.companyValuation) return 0;
         return (safeInput.investmentAmount / safeInput.valuationCap) * ((safeInput.companyValuation + safeInput.investmentAmount) / safeInput.companyValuation) * 100;
-      case 'discount':
-        // Discount SAFE: investmentAmount / (companyValuation * (1 - discountRate)) * 100
-        if (!safeInput.discountRate || !safeInput.companyValuation) return 0;
-        const discountedValuation = safeInput.companyValuation * (1 - safeInput.discountRate);
-        return (safeInput.investmentAmount / discountedValuation) * 100;
       case 'mfn':
         if (!safeInput.companyValuation) return 0;
         return (safeInput.investmentAmount / safeInput.companyValuation) * 100;
@@ -102,6 +96,14 @@ const SafeConverter = () => {
             </CardHeader>
             <CardContent className="p-4">
               <div className="grid gap-4">
+                <Label htmlFor={`investorName-${safeInput.id}`}>Investor Name</Label>
+                <Input
+                  type="text"
+                  id={`investorName-${safeInput.id}`}
+                  value={safeInput.investorName}
+                  onChange={(e) => updateSafeInput(safeInput.id, { investorName: e.target.value })}
+                  className="bg-input border rounded-md focus:ring-accent focus:border-accent"
+                />
                 {safeInput.type === 'valuationCap' && (
                   <>
                     <div className="grid grid-cols-2 gap-2">
@@ -143,47 +145,6 @@ const SafeConverter = () => {
                           }}
                       className="bg-input border rounded-md focus:ring-accent focus:border-accent"
                     />
-                  </>
-                )}
-                {safeInput.type === 'discount' && (
-                  <>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <Label htmlFor={`discountRate-${safeInput.id}`}>Discount Rate</Label>
-                        <Input
-                          type="number"
-                          id={`discountRate-${safeInput.id}`}
-                          value={safeInput.discountRate}
-                          onChange={(e) => updateSafeInput(safeInput.id, { discountRate: Number(e.target.value) })}
-                          className="bg-input border rounded-md focus:ring-accent focus:border-accent"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor={`investmentAmount-${safeInput.id}`}>Investment Amount</Label>
-                        <Input
-                          type="text"
-                          id={`investmentAmount-${safeInput.id}`}
-                          value={formatAsCurrency(safeInput.investmentAmount)}
-                           onChange={(e) => {
-                            const parsedValue = parseNumber(e.target.value);
-                            updateSafeInput(safeInput.id, { investmentAmount: parsedValue });
-                          }}
-                          className="bg-input border rounded-md focus:ring-accent focus:border-accent"
-                        />
-                      </div>
-                    </div>
-                    <Label htmlFor={`companyValuation-${safeInput.id}`}>Company Valuation at Conversion</Label>
-                    <Input
-                        type="text"
-                        id={`companyValuation-${safeInput.id}`}
-                        value={formatAsCurrency(safeInput.companyValuation)}
-                         onChange={(e) => {
-                            const parsedValue = parseNumber(e.target.value);
-                            updateSafeInput(safeInput.id, { companyValuation: parsedValue });
-                          }}
-                      className="bg-input border rounded-md focus:ring-accent focus:border-accent"
-                    />
-
                   </>
                 )}
                 {safeInput.type === 'mfn' && (
@@ -233,9 +194,6 @@ const SafeConverter = () => {
         <Button onClick={() => addSafeInput('valuationCap')} className="bg-accent text-accent-foreground hover:bg-accent-foreground hover:text-accent rounded-full">
           <Plus className="h-4 w-4 mr-2" /> Valuation Cap SAFE
         </Button>
-        <Button onClick={() => addSafeInput('discount')} className="bg-accent text-accent-foreground hover:bg-accent-foreground hover:text-accent rounded-full">
-          <Plus className="h-4 w-4 mr-2" /> Discount SAFE
-        </Button>
         <Button onClick={() => addSafeInput('mfn')} className="bg-accent text-accent-foreground hover:bg-accent-foreground hover:text-accent rounded-full">
           <Plus className="h-4 w-4 mr-2" /> MFN SAFE
         </Button>
@@ -253,6 +211,7 @@ const SafeConverter = () => {
                 <table className="min-w-full table-auto">
                   <thead>
                     <tr className="bg-secondary text-secondary-foreground">
+                      <th className="py-2 px-4 font-semibold text-left">Investor Name</th>
                       <th className="py-2 px-4 font-semibold text-left">SAFE Type</th>
                       <th className="py-2 px-4 font-semibold text-left">Projected Equity</th>
                     </tr>
@@ -260,6 +219,7 @@ const SafeConverter = () => {
                   <tbody>
                     {safeInputs.map((safeInput) => (
                       <tr key={safeInput.id} className="border-b">
+                        <td className="py-2 px-4">{safeInput.investorName}</td>
                         <td className="py-2 px-4">{safeInput.type}</td>
                         <td className="py-2 px-4">{(calculateProjection(safeInput)).toFixed(2)}%</td>
                       </tr>
