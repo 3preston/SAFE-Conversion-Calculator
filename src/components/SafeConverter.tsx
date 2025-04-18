@@ -71,12 +71,12 @@ const SafeConverter = () => {
     return isNaN(parsed) ? undefined : parsed;
   };
 
-  const calculatePostMoneyEquity = (safeInput: SafeInput) => {
+    const calculatePostMoneyEquity = (safeInput: SafeInput) => {
     let postMoneyOwnership = 0;
 
     switch (safeInput.type) {
       case 'Valuation Cap': {
-        if (!safeInput.valuationCap || !equityFinancingValuation) return 0;
+        if (!safeInput.valuationCap) return 0;
 
         // From YC SAFE docs:
         // post-money ownership = investment amount / valuation cap
