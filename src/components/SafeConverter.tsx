@@ -78,12 +78,13 @@ const SafeConverter = () => {
       case 'Valuation Cap': {
         if (!safeInput.valuationCap || !companyValuation) return 0;
 
-        // Calculate post-money valuation.
-        const postMoneyValuation = Math.max(safeInput.valuationCap, companyValuation);
+        // The investor receives the number of shares equal to the investment amount divided by the price per share, where the price per share is determined based on the valuation cap.
+
+        // Calculate the post-money valuation. Use the SAFE's valuation cap if it's lower than the company valuation.
+        const effectiveValuation = Math.min(safeInput.valuationCap, companyValuation);
 
         // Calculate ownership percentage.
-        ownership = safeInput.investmentAmount / postMoneyValuation;
-
+        ownership = safeInput.investmentAmount / effectiveValuation;
         break;
       }
       case 'Discount': {
