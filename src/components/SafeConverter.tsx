@@ -11,7 +11,7 @@ import { Plus, X } from "lucide-react";
 type SafeInput = {
   id: string;
   investorName: string;
-  type: 'Valuation Cap' | 'Discount';
+  type: 'Valuation Cap SAFE' | 'Discount SAFE';
   valuationCap?: number;
   discountRate?: number;
   investmentAmount: number;
@@ -28,9 +28,9 @@ const SafeConverter = () => {
       type,
       investmentAmount: 100000,
     };
-    if (type === 'Valuation Cap') {
+    if (type === 'Valuation Cap SAFE') {
       newSafeInput.valuationCap = 1000000;
-    } else if (type === 'Discount') {
+    } else if (type === 'Discount SAFE') {
       newSafeInput.discountRate = 0.2;
     }
     setSafeInputs([...safeInputs, newSafeInput]);
@@ -72,33 +72,33 @@ const SafeConverter = () => {
   };
 
     const calculatePostMoneyEquity = (safeInput: SafeInput) => {
-    let postMoneyOwnership = 0;
+        let postMoneyOwnership = 0;
 
-    switch (safeInput.type) {
-      case 'Valuation Cap': {
-        if (!safeInput.valuationCap) return 0;
+        switch (safeInput.type) {
+            case 'Valuation Cap SAFE': {
+                if (!safeInput.valuationCap) return 0;
 
-        // From YC SAFE docs:
-        // post-money ownership = investment amount / valuation cap
-        postMoneyOwnership = safeInput.investmentAmount / safeInput.valuationCap;
-        break;
-      }
-      case 'Discount': {
-        if (!safeInput.discountRate || !equityFinancingValuation) return 0;
+                // post-money ownership = investment amount / max(valuation cap, pre-money valuation)
+                const effectiveValuation = Math.max(safeInput.valuationCap, equityFinancingValuation);
+                postMoneyOwnership = safeInput.investmentAmount / effectiveValuation;
+                break;
+            }
+            case 'Discount SAFE': {
+                if (!safeInput.discountRate || !equityFinancingValuation) return 0;
 
-        // From YC SAFE docs:
-        // post-money ownership = investment amount / (price per share * total number of shares)
-        // price per share = equity financing valuation / total number of shares
-        // post-money ownership = investment amount / (equity financing valuation * (1 - discount))
-        postMoneyOwnership = safeInput.investmentAmount / (equityFinancingValuation * (1 - safeInput.discountRate));
-        break;
-      }
-      default:
-        return 0;
-    }
+                // post-money ownership = investment amount / (price per share * total number of shares)
+                // price per share = equity financing valuation / total number of shares
+                // post-money ownership = investment amount / (equity financing valuation * (1 - discount))
+                postMoneyOwnership = safeInput.investmentAmount / (equityFinancingValuation * (1 - safeInput.discountRate));
+                break;
+            }
+            default:
+                return 0;
+        }
 
-    return postMoneyOwnership * 100;
-  };
+        return postMoneyOwnership * 100;
+    };
+
 
   return (
     <div className="container py-10">
@@ -128,7 +128,7 @@ const SafeConverter = () => {
         {safeInputs.map((safeInput) => (
           <Card key={safeInput.id} className="bg-card text-card-foreground shadow-md rounded-lg overflow-hidden">
             <CardHeader className="flex flex-row items-center justify-between p-4">
-              <CardTitle className="text-lg font-semibold">{safeInput.type.toUpperCase()} SAFE</CardTitle>
+              <CardTitle className="text-lg font-semibold">{safeInput.type.toUpperCase()}</CardTitle>
               <Button variant="ghost" size="icon" onClick={() => removeSafeInput(safeInput.id)}>
                 <X className="h-4 w-4" />
               </Button>
@@ -143,10 +143,10 @@ const SafeConverter = () => {
                   onChange={(e) => updateSafeInput(safeInput.id, { investorName: e.target.value })}
                   className="bg-input border rounded-md focus:ring-accent focus:border-accent"
                 />
-                {(safeInput.type === 'Valuation Cap' || safeInput.type === 'Discount') && (
+                {(safeInput.type === 'Valuation Cap SAFE' || safeInput.type === 'Discount SAFE') && (
                   <>
                     <div className="grid grid-cols-1 gap-2">
-                      {safeInput.type === 'Valuation Cap' && (
+                      {safeInput.type === 'Valuation Cap SAFE' && (
                         <div>
                           <Label htmlFor={`valuationCap-${safeInput.id}`}>Valuation Cap</Label>
                           <Input
@@ -161,7 +161,7 @@ const SafeConverter = () => {
                           />
                         </div>
                       )}
-                      {safeInput.type === 'Discount' && (
+                      {safeInput.type === 'Discount SAFE' && (
                         <div>
                           <Label htmlFor={`discountRate-${safeInput.id}`}>Discount Rate</Label>
                           <Input
@@ -204,10 +204,10 @@ const SafeConverter = () => {
       <Separator className="my-6" />
 
       <div className="flex justify-center space-x-4">
-        <Button onClick={() => addSafeInput('Valuation Cap')} className="bg-accent text-accent-foreground hover:bg-accent-foreground hover:text-accent rounded-full">
+        <Button onClick={() => addSafeInput('Valuation Cap SAFE')} className="bg-accent text-accent-foreground hover:bg-accent-foreground hover:text-accent rounded-full">
           <Plus className="h-4 w-4 mr-2" /> Valuation Cap SAFE
         </Button>
-        <Button onClick={() => addSafeInput('Discount')} className="bg-accent text-accent-foreground hover:bg-accent-foreground hover:text-accent rounded-full">
+        <Button onClick={() => addSafeInput('Discount SAFE')} className="bg-accent text-accent-foreground hover:bg-accent-foreground hover:text-accent rounded-full">
           <Plus className="h-4 w-4 mr-2" /> Discount SAFE
         </Button>
       </div>
