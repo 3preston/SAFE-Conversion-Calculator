@@ -76,8 +76,14 @@ const SafeConverter = () => {
 
     switch (safeInput.type) {
       case 'Valuation Cap': {
-        if (!safeInput.valuationCap) return 0;
-        ownership = safeInput.investmentAmount / safeInput.valuationCap;
+        if (!safeInput.valuationCap || !companyValuation) return 0;
+
+        // Calculate post-money valuation.
+        const postMoneyValuation = Math.max(safeInput.valuationCap, companyValuation);
+
+        // Calculate ownership percentage.
+        ownership = safeInput.investmentAmount / postMoneyValuation;
+
         break;
       }
       case 'Discount': {
