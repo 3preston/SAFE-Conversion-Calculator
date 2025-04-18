@@ -11,7 +11,7 @@ import { Plus, X } from "lucide-react";
 type SafeInput = {
   id: string;
   investorName: string;
-  type: 'Valuation Cap' | 'Discount' | 'Most Favored Nations';
+  type: 'Valuation Cap' | 'Discount';
   valuationCap?: number;
   discountRate?: number;
   investmentAmount: number;
@@ -19,7 +19,7 @@ type SafeInput = {
 
 const SafeConverter = () => {
   const [safeInputs, setSafeInputs] = useState<SafeInput[]>([]);
-  const [companyValuation, setCompanyValuation] = useState<number>(5000000);
+  const [equityFinancingValuation, setEquityFinancingValuation] = useState<number>(10000000);
 
   const addSafeInput = (type: SafeInput['type']) => {
     const newSafeInput: SafeInput = {
@@ -71,37 +71,33 @@ const SafeConverter = () => {
     return isNaN(parsed) ? undefined : parsed;
   };
 
-  const calculateProjection = (safeInput: SafeInput) => {
-    let ownership = 0;
+  const calculatePostMoneyEquity = (safeInput: SafeInput) => {
+    let postMoneyOwnership = 0;
 
     switch (safeInput.type) {
       case 'Valuation Cap': {
-        if (!safeInput.valuationCap || !companyValuation) return 0;
+        if (!safeInput.valuationCap || !equityFinancingValuation) return 0;
 
-        // The investor receives the number of shares equal to the investment amount divided by the price per share, where the price per share is determined based on the valuation cap.
-
-        // Calculate the post-money valuation. Use the SAFE's valuation cap if it's lower than the company valuation.
-        const effectiveValuation = Math.min(safeInput.valuationCap, companyValuation);
-
-        // Calculate ownership percentage.
-        ownership = safeInput.investmentAmount / effectiveValuation;
+        // From YC SAFE docs:
+        // post-money ownership = investment amount / valuation cap
+        postMoneyOwnership = safeInput.investmentAmount / safeInput.valuationCap;
         break;
       }
       case 'Discount': {
-        if (!safeInput.discountRate || !companyValuation) return 0;
-        ownership = safeInput.investmentAmount / (companyValuation * (1 - safeInput.discountRate));
-        break;
-      }
-      case 'Most Favored Nations': {
-        if (!companyValuation) return 0;
-        ownership = safeInput.investmentAmount / companyValuation;
+        if (!safeInput.discountRate || !equityFinancingValuation) return 0;
+
+        // From YC SAFE docs:
+        // post-money ownership = investment amount / (price per share * total number of shares)
+        // price per share = equity financing valuation / total number of shares
+        // post-money ownership = investment amount / (equity financing valuation * (1 - discount))
+        postMoneyOwnership = safeInput.investmentAmount / (equityFinancingValuation * (1 - safeInput.discountRate));
         break;
       }
       default:
         return 0;
     }
 
-    return ownership * 100;
+    return postMoneyOwnership * 100;
   };
 
   return (
@@ -113,14 +109,14 @@ const SafeConverter = () => {
         </CardHeader>
         <CardContent className="p-4">
           <div className="grid gap-4">
-            <Label htmlFor="companyValuation">Company Valuation at Conversion</Label>
+            <Label htmlFor="equityFinancingValuation">Equity Financing Valuation</Label>
             <Input
               type="text"
-              id="companyValuation"
-              value={formatAsCurrency(companyValuation)}
+              id="equityFinancingValuation"
+              value={formatAsCurrency(equityFinancingValuation)}
               onChange={(e) => {
                 const parsedValue = parseNumber(e.target.value);
-                setCompanyValuation(parsedValue !== undefined ? parsedValue : 0);
+                setEquityFinancingValuation(parsedValue !== undefined ? parsedValue : 0);
               }}
               className="bg-input border rounded-md focus:ring-accent focus:border-accent"
             />
@@ -196,27 +192,8 @@ const SafeConverter = () => {
                     </div>
                   </>
                 )}
-                {safeInput.type === 'Most Favored Nations' && (
-                  <>
-                    <div className="grid grid-cols-1 gap-2">
-                      <div>
-                        <Label htmlFor={`investmentAmount-${safeInput.id}`}>Investment Amount</Label>
-                        <Input
-                          type="text"
-                          id={`investmentAmount-${safeInput.id}`}
-                          value={formatAsCurrency(safeInput.investmentAmount)}
-                          onChange={(e) => {
-                            const parsedValue = parseNumber(e.target.value);
-                            updateSafeInput(safeInput.id, { investmentAmount: parsedValue });
-                          }}
-                          className="bg-input border rounded-md focus:ring-accent focus:border-accent"
-                        />
-                      </div>
-                    </div>
-                  </>
-                )}
                 <div className="text-right">
-                  Projected Equity: {(calculateProjection(safeInput)).toFixed(2)}%
+                  Projected Equity: {(calculatePostMoneyEquity(safeInput)).toFixed(2)}%
                 </div>
               </div>
             </CardContent>
@@ -232,9 +209,6 @@ const SafeConverter = () => {
         </Button>
         <Button onClick={() => addSafeInput('Discount')} className="bg-accent text-accent-foreground hover:bg-accent-foreground hover:text-accent rounded-full">
           <Plus className="h-4 w-4 mr-2" /> Discount SAFE
-        </Button>
-        <Button onClick={() => addSafeInput('Most Favored Nations')} className="bg-accent text-accent-foreground hover:bg-accent-foreground hover:text-accent rounded-full">
-          <Plus className="h-4 w-4 mr-2" /> Most Favored Nations SAFE
         </Button>
       </div>
 
@@ -260,7 +234,7 @@ const SafeConverter = () => {
                       <tr key={safeInput.id} className="border-b">
                         <td className="py-2 px-4">{safeInput.investorName}</td>
                         <td className="py-2 px-4">{safeInput.type}</td>
-                        <td className="py-2 px-4">{(calculateProjection(safeInput)).toFixed(2)}%</td>
+                        <td className="py-2 px-4">{(calculatePostMoneyEquity(safeInput)).toFixed(2)}%</td>
                       </tr>
                     ))}
                   </tbody>
