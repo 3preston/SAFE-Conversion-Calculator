@@ -74,16 +74,14 @@ const SafeConverter = () => {
     switch (safeInput.type) {
       case 'valuationCap':
         // Post-money SAFE: investmentAmount / valuationCap * (companyValuation + investmentAmount) / companyValuation * 100
-        return (safeInput.investmentAmount / (safeInput.valuationCap || 1)) * ((safeInput.companyValuation + safeInput.investmentAmount) / safeInput.companyValuation) * 100;
+        if (!safeInput.valuationCap || !safeInput.companyValuation) return 0;
+        return (safeInput.investmentAmount / safeInput.valuationCap) * ((safeInput.companyValuation + safeInput.investmentAmount) / safeInput.companyValuation) * 100;
       case 'discount':
-           // Determine effective valuation by considering both discount rate and valuation cap (if present)
-          let effectiveValuation = safeInput.companyValuation * (1 - (safeInput.discountRate || 0));
-          if (safeInput.valuationCap && effectiveValuation > safeInput.valuationCap) {
-              effectiveValuation = safeInput.valuationCap; // Apply valuation cap if lower
-          }
-          // Calculate ownership percentage based on the effective valuation
-          return (safeInput.investmentAmount / effectiveValuation) * 100;
+        // Discount SAFE: investmentAmount / (companyValuation * (1 - discountRate)) * 100
+        if (!safeInput.discountRate || !safeInput.companyValuation) return 0;
+        return (safeInput.investmentAmount / (safeInput.companyValuation * (1 - safeInput.discountRate))) * 100;
       case 'mfn':
+        if (!safeInput.companyValuation) return 0;
         return (safeInput.investmentAmount / safeInput.companyValuation) * 100;
       default:
         return 0;
@@ -184,19 +182,7 @@ const SafeConverter = () => {
                           }}
                       className="bg-input border rounded-md focus:ring-accent focus:border-accent"
                     />
-                     <div>
-                        <Label htmlFor={`valuationCap-${safeInput.id}`}>Valuation Cap</Label>
-                        <Input
-                          type="text"
-                          id={`valuationCap-${safeInput.id}`}
-                          value={formatAsCurrency(safeInput.valuationCap)}
-                          onChange={(e) => {
-                            const parsedValue = parseNumber(e.target.value);
-                            updateSafeInput(safeInput.id, { valuationCap: parsedValue });
-                          }}
-                          className="bg-input border rounded-md focus:ring-accent focus:border-accent"
-                        />
-                      </div>
+
                   </>
                 )}
                 {safeInput.type === 'mfn' && (
