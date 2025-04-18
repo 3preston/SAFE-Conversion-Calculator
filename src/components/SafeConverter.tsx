@@ -78,17 +78,14 @@ const SafeConverter = () => {
             case 'Valuation Cap SAFE': {
                 if (!safeInput.valuationCap) return 0;
 
-                // post-money ownership = investment amount / max(valuation cap, pre-money valuation)
-                const effectiveValuation = Math.max(safeInput.valuationCap, equityFinancingValuation);
-                postMoneyOwnership = safeInput.investmentAmount / effectiveValuation;
+                const conversionPrice = Math.min(safeInput.valuationCap, equityFinancingValuation) / 1;
+                const shares = safeInput.investmentAmount / conversionPrice;
+                postMoneyOwnership = shares / 1; // Assuming fully diluted shares is 1
                 break;
             }
             case 'Discount SAFE': {
                 if (!safeInput.discountRate || !equityFinancingValuation) return 0;
 
-                // post-money ownership = investment amount / (price per share * total number of shares)
-                // price per share = equity financing valuation / total number of shares
-                // post-money ownership = investment amount / (equity financing valuation * (1 - discount))
                 postMoneyOwnership = safeInput.investmentAmount / (equityFinancingValuation * (1 - safeInput.discountRate));
                 break;
             }
