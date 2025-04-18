@@ -46,6 +46,13 @@ const SafeConverter = () => {
     setSafeInputs(safeInputs.filter(safeInput => safeInput.id !== id));
   };
 
+  const formatAsCurrency = (value: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+    }).format(value);
+  };
+
   const calculateProjection = (safeInput: SafeInput) => {
     switch (safeInput.type) {
       case 'valuationCap':
