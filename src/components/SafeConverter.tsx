@@ -233,7 +233,7 @@ const SafeConverter = () => {
           <Separator className="my-6" />
           <Card className="w-full max-w-3xl mx-auto bg-card text-card-foreground shadow-md rounded-lg overflow-hidden">
             <CardHeader className="p-4">
-              <CardTitle className="text-xl font-semibold">Comparative Summary</CardTitle>
+              <CardTitle className="text-xl font-semibold">Capitalization Table</CardTitle>
             </CardHeader>
             <CardContent className="p-4">
               <div className="overflow-x-auto">
