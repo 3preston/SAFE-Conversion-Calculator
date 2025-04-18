@@ -78,15 +78,14 @@ const SafeConverter = () => {
             case 'Valuation Cap SAFE': {
                 if (!safeInput.valuationCap) return 0;
 
-                const conversionPrice = Math.min(safeInput.valuationCap, equityFinancingValuation) / 1;
-                const shares = safeInput.investmentAmount / conversionPrice;
-                postMoneyOwnership = shares / 1; // Assuming fully diluted shares is 1
+                const effectiveValuation = Math.min(safeInput.valuationCap, equityFinancingValuation);
+                postMoneyOwnership = safeInput.investmentAmount / effectiveValuation;
                 break;
             }
             case 'Discount SAFE': {
                 if (!safeInput.discountRate || !equityFinancingValuation) return 0;
-
-                postMoneyOwnership = safeInput.investmentAmount / (equityFinancingValuation * (1 - safeInput.discountRate));
+                const discount = 1 - safeInput.discountRate;
+                postMoneyOwnership = safeInput.investmentAmount / (equityFinancingValuation * discount);
                 break;
             }
             default:
@@ -224,6 +223,7 @@ const SafeConverter = () => {
                       <th className="py-2 px-4 font-semibold text-left">Investor Name</th>
                       <th className="py-2 px-4 font-semibold text-left">SAFE Type</th>
                       <th className="py-2 px-4 font-semibold text-left">Projected Equity</th>
+                      <th className="py-2 px-4 font-semibold text-left">Equity Financing</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -232,6 +232,7 @@ const SafeConverter = () => {
                         <td className="py-2 px-4">{safeInput.investorName}</td>
                         <td className="py-2 px-4">{safeInput.type}</td>
                         <td className="py-2 px-4">{(calculatePostMoneyEquity(safeInput)).toFixed(2)}%</td>
+                        <td className="py-2 px-4">{formatAsCurrency(equityFinancingValuation)}</td>
                       </tr>
                     ))}
                   </tbody>
