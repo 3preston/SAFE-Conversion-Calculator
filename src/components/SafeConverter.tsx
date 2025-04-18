@@ -19,7 +19,7 @@ type SafeInput = {
 
 const SafeConverter = () => {
   const [safeInputs, setSafeInputs] = useState<SafeInput[]>([]);
-    const [companyValuation, setCompanyValuation] = useState<number>(5000000);
+  const [companyValuation, setCompanyValuation] = useState<number>(5000000);
 
   const addSafeInput = (type: SafeInput['type']) => {
     const newSafeInput: SafeInput = {
@@ -66,32 +66,37 @@ const SafeConverter = () => {
     return value.toLocaleString('en-US');
   };
 
-    const parseNumber = (value: string): number | undefined => {
-        const parsed = Number(value.replace(/[^0-9.-]+/g, ''));
-        return isNaN(parsed) ? undefined : parsed;
-    };
+  const parseNumber = (value: string): number | undefined => {
+    const parsed = Number(value.replace(/[^0-9.-]+/g, ''));
+    return isNaN(parsed) ? undefined : parsed;
+  };
 
   const calculateProjection = (safeInput: SafeInput) => {
-    switch (safeInput.type) {
-        case 'valuationCap': {
-            // This is the correct math for a post-money SAFE
-            if (!safeInput.valuationCap) return 0;
-            const ownership = safeInput.investmentAmount / safeInput.valuationCap;
-            return ownership * 100;
-        }
-        case 'discount': {
-            if (!safeInput.discountRate) return 0;
-            const discountedValuation = companyValuation * (1 - safeInput.discountRate);
-            const ownership = safeInput.investmentAmount / discountedValuation;
-            return ownership * 100;
-        }
-        case 'mfn': {
-            const ownership = safeInput.investmentAmount / companyValuation;
-            return ownership * 100;
-        }
-      default:
-        return 0;
-    }
+      switch (safeInput.type) {
+          case 'valuationCap': {
+              if (!safeInput.valuationCap || !companyValuation) return 0;
+
+              // YC Valuation Cap Safe: Ownership = Investment / Valuation Cap
+              const ownership = safeInput.investmentAmount / safeInput.valuationCap;
+              return ownership * 100;
+          }
+          case 'discount': {
+              if (!safeInput.discountRate || !companyValuation) return 0;
+
+              // YC Discount Safe: Ownership = Investment / (Company Valuation * (1 - Discount))
+              const discountedValuation = companyValuation * (1 - safeInput.discountRate);
+              const ownership = safeInput.investmentAmount / discountedValuation;
+              return ownership * 100;
+          }
+          case 'mfn': {
+              if (!companyValuation) return 0;
+              // MFN SAFE: Ownership = Investment / Company Valuation
+              const ownership = safeInput.investmentAmount / companyValuation;
+              return ownership * 100;
+          }
+          default:
+              return 0;
+      }
   };
 
   return (
