@@ -79,15 +79,17 @@ const SafeConverter = () => {
           return 0;
       }
 
-      const safeValuation = safeInput.type === 'Valuation Cap SAFE' && safeInput.valuationCap
-          ? Math.min(safeInput.valuationCap, equityFinancingValuation)
-          : equityFinancingValuation;
+      let effectiveValuationCap = equityFinancingValuation;
 
-      if (safeInput.type === 'Valuation Cap SAFE' || safeInput.type === 'Discount SAFE') {
-          postMoneyOwnership = (safeInput.investmentAmount / safeValuation) * (equityFinancingInvestment / equityFinancingValuation);
-      }
+        if (safeInput.type === 'Valuation Cap SAFE' && safeInput.valuationCap) {
+            effectiveValuationCap = Math.min(safeInput.valuationCap, equityFinancingValuation);
+        } else if (safeInput.type === 'Discount SAFE' && safeInput.discountRate) {
+            effectiveValuationCap = equityFinancingValuation * (1 - safeInput.discountRate);
+        }
 
-      return postMoneyOwnership * 100;
+        postMoneyOwnership = (safeInput.investmentAmount / effectiveValuationCap) * 100;
+
+      return postMoneyOwnership;
   };
 
   const calculateEquityFinancingOwnership = () => {
@@ -232,7 +234,7 @@ const SafeConverter = () => {
                       <th className="py-2 px-4 font-semibold text-left">Investor Name</th>
                       <th className="py-2 px-4 font-semibold text-left">SAFE Type</th>
                       <th className="py-2 px-4 font-semibold text-left">Projected Equity</th>
-                      <th className="py-2 px-4 font-semibold text-left">Equity Financing</th>
+                      <th className="py-2 px-4 font-semibold text-left">Equity Financing Valuation</th>
                       <th className="py-2 px-4 font-semibold text-left">Investment Amount</th>
                       <th className="py-2 px-4 font-semibold text-left">Equity Ownership</th>
                     </tr>
