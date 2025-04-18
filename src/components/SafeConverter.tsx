@@ -73,29 +73,25 @@ const SafeConverter = () => {
   };
 
   const calculatePostMoneyEquity = (safeInput: SafeInput) => {
-    let postMoneyOwnership = 0;
+      let postMoneyOwnership = 0;
 
-    switch (safeInput.type) {
-        case 'Valuation Cap SAFE': {
-            if (!safeInput.valuationCap) return 0;
-            const effectiveValuation = Math.min(safeInput.valuationCap, equityFinancingValuation);
-            postMoneyOwnership = safeInput.investmentAmount / effectiveValuation;
-            break;
-        }
-      case 'Discount SAFE': {
-        if (!safeInput.discountRate || !equityFinancingValuation) return 0;
-        postMoneyOwnership = safeInput.investmentAmount / (equityFinancingValuation * (1 - safeInput.discountRate));
-        break;
+      if (!equityFinancingValuation || !equityFinancingInvestment) {
+          return 0;
       }
-      default:
-        return 0;
-    }
 
-    return postMoneyOwnership * 100;
+      const safeValuation = safeInput.type === 'Valuation Cap SAFE' && safeInput.valuationCap
+          ? Math.min(safeInput.valuationCap, equityFinancingValuation)
+          : equityFinancingValuation;
+
+      if (safeInput.type === 'Valuation Cap SAFE' || safeInput.type === 'Discount SAFE') {
+          postMoneyOwnership = (safeInput.investmentAmount / safeValuation) * (equityFinancingInvestment / equityFinancingValuation);
+      }
+
+      return postMoneyOwnership * 100;
   };
 
   const calculateEquityFinancingOwnership = () => {
-    return (equityFinancingInvestment / equityFinancingValuation) * 100;
+      return (equityFinancingInvestment / equityFinancingValuation) * 100;
   };
 
 
@@ -249,7 +245,7 @@ const SafeConverter = () => {
                         <td className="py-2 px-4">{(calculatePostMoneyEquity(safeInput)).toFixed(2)}%</td>
                         <td className="py-2 px-4">{formatAsCurrency(equityFinancingValuation)}</td>
                         <td className="py-2 px-4">{formatAsCurrency(safeInput.investmentAmount)}</td>
-                        <td className="py-2 px-4">N/A</td> {/*  N/A since this row is for SAFE */}
+                        <td className="py-2 px-4">N/A</td>
                       </tr>
                     ))}
                       <tr className="border-b">
