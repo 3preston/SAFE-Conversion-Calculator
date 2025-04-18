@@ -79,7 +79,8 @@ const SafeConverter = () => {
       case 'discount':
         // Discount SAFE: investmentAmount / (companyValuation * (1 - discountRate)) * 100
         if (!safeInput.discountRate || !safeInput.companyValuation) return 0;
-        return (safeInput.investmentAmount / (safeInput.companyValuation * (1 - safeInput.discountRate))) * 100;
+        const discountedValuation = safeInput.companyValuation * (1 - safeInput.discountRate);
+        return (safeInput.investmentAmount / discountedValuation) * 100;
       case 'mfn':
         if (!safeInput.companyValuation) return 0;
         return (safeInput.investmentAmount / safeInput.companyValuation) * 100;
