@@ -46,11 +46,26 @@ const SafeConverter = () => {
     setSafeInputs(safeInputs.filter(safeInput => safeInput.id !== id));
   };
 
-  const formatAsCurrency = (value: number) => {
+  const formatAsCurrency = (value: number | undefined) => {
+    if (value === undefined) {
+      return '';
+    }
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
     }).format(value);
+  };
+
+  const formatNumberWithCommas = (value: number | undefined) => {
+    if (value === undefined) {
+      return '';
+    }
+    return value.toLocaleString('en-US');
+  };
+
+  const parseNumber = (value: string): number | undefined => {
+    const parsed = Number(value.replace(/[^0-9.-]+/g, ''));
+    return isNaN(parsed) ? undefined : parsed;
   };
 
   const calculateProjection = (safeInput: SafeInput) => {
@@ -85,30 +100,39 @@ const SafeConverter = () => {
                       <div>
                         <Label htmlFor={`valuationCap-${safeInput.id}`}>Valuation Cap</Label>
                         <Input
-                          type="number"
+                          type="text"
                           id={`valuationCap-${safeInput.id}`}
-                          value={safeInput.valuationCap}
-                          onChange={(e) => updateSafeInput(safeInput.id, { valuationCap: Number(e.target.value) })}
+                          value={formatAsCurrency(safeInput.valuationCap)}
+                          onChange={(e) => {
+                            const parsedValue = parseNumber(e.target.value);
+                            updateSafeInput(safeInput.id, { valuationCap: parsedValue });
+                          }}
                           className="bg-input border rounded-md focus:ring-accent focus:border-accent"
                         />
                       </div>
                       <div>
                         <Label htmlFor={`investmentAmount-${safeInput.id}`}>Investment Amount</Label>
                         <Input
-                          type="number"
+                          type="text"
                           id={`investmentAmount-${safeInput.id}`}
-                          value={safeInput.investmentAmount}
-                          onChange={(e) => updateSafeInput(safeInput.id, { investmentAmount: Number(e.target.value) })}
+                          value={formatAsCurrency(safeInput.investmentAmount)}
+                          onChange={(e) => {
+                            const parsedValue = parseNumber(e.target.value);
+                            updateSafeInput(safeInput.id, { investmentAmount: parsedValue });
+                          }}
                           className="bg-input border rounded-md focus:ring-accent focus:border-accent"
                         />
                       </div>
                     </div>
                     <Label htmlFor={`companyValuation-${safeInput.id}`}>Company Valuation at Conversion</Label>
                     <Input
-                      type="number"
+                      type="text"
                       id={`companyValuation-${safeInput.id}`}
-                      value={safeInput.companyValuation}
-                      onChange={(e) => updateSafeInput(safeInput.id, { companyValuation: Number(e.target.value) })}
+                      value={formatAsCurrency(safeInput.companyValuation)}
+                      onChange={(e) => {
+                            const parsedValue = parseNumber(e.target.value);
+                            updateSafeInput(safeInput.id, { companyValuation: parsedValue });
+                          }}
                       className="bg-input border rounded-md focus:ring-accent focus:border-accent"
                     />
                   </>
@@ -129,20 +153,26 @@ const SafeConverter = () => {
                       <div>
                         <Label htmlFor={`investmentAmount-${safeInput.id}`}>Investment Amount</Label>
                         <Input
-                          type="number"
+                          type="text"
                           id={`investmentAmount-${safeInput.id}`}
-                          value={safeInput.investmentAmount}
-                          onChange={(e) => updateSafeInput(safeInput.id, { investmentAmount: Number(e.target.value) })}
+                          value={formatAsCurrency(safeInput.investmentAmount)}
+                           onChange={(e) => {
+                            const parsedValue = parseNumber(e.target.value);
+                            updateSafeInput(safeInput.id, { investmentAmount: parsedValue });
+                          }}
                           className="bg-input border rounded-md focus:ring-accent focus:border-accent"
                         />
                       </div>
                     </div>
                     <Label htmlFor={`companyValuation-${safeInput.id}`}>Company Valuation at Conversion</Label>
                     <Input
-                      type="number"
-                      id={`companyValuation-${safeInput.id}`}
-                      value={safeInput.companyValuation}
-                      onChange={(e) => updateSafeInput(safeInput.id, { companyValuation: Number(e.target.value) })}
+                        type="text"
+                        id={`companyValuation-${safeInput.id}`}
+                        value={formatAsCurrency(safeInput.companyValuation)}
+                         onChange={(e) => {
+                            const parsedValue = parseNumber(e.target.value);
+                            updateSafeInput(safeInput.id, { companyValuation: parsedValue });
+                          }}
                       className="bg-input border rounded-md focus:ring-accent focus:border-accent"
                     />
                   </>
@@ -153,20 +183,26 @@ const SafeConverter = () => {
                       <div>
                         <Label htmlFor={`investmentAmount-${safeInput.id}`}>Investment Amount</Label>
                         <Input
-                          type="number"
+                          type="text"
                           id={`investmentAmount-${safeInput.id}`}
-                          value={safeInput.investmentAmount}
-                          onChange={(e) => updateSafeInput(safeInput.id, { investmentAmount: Number(e.target.value) })}
+                          value={formatAsCurrency(safeInput.investmentAmount)}
+                           onChange={(e) => {
+                            const parsedValue = parseNumber(e.target.value);
+                            updateSafeInput(safeInput.id, { investmentAmount: parsedValue });
+                          }}
                           className="bg-input border rounded-md focus:ring-accent focus:border-accent"
                         />
                       </div>
                       <div>
                         <Label htmlFor={`companyValuation-${safeInput.id}`}>Company Valuation at Conversion</Label>
                         <Input
-                          type="number"
+                          type="text"
                           id={`companyValuation-${safeInput.id}`}
-                          value={safeInput.companyValuation}
-                          onChange={(e) => updateSafeInput(safeInput.id, { companyValuation: Number(e.target.value) })}
+                          value={formatAsCurrency(safeInput.companyValuation)}
+                           onChange={(e) => {
+                            const parsedValue = parseNumber(e.target.value);
+                            updateSafeInput(safeInput.id, { companyValuation: parsedValue });
+                          }}
                           className="bg-input border rounded-md focus:ring-accent focus:border-accent"
                         />
                       </div>
