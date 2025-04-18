@@ -78,8 +78,7 @@ const SafeConverter = () => {
     switch (safeInput.type) {
         case 'Valuation Cap SAFE': {
             if (!safeInput.valuationCap) return 0;
-
-            const effectiveValuation = Math.min(equityFinancingValuation, safeInput.valuationCap);
+            const effectiveValuation = Math.max(safeInput.valuationCap, equityFinancingValuation);
             postMoneyOwnership = safeInput.investmentAmount / effectiveValuation;
             break;
         }
@@ -203,7 +202,7 @@ const SafeConverter = () => {
                   </>
                 )}
                 <div className="text-right">
-                  Projected Equity: {(calculatePostMoneyEquity(safeInput) * 100).toFixed(2)}%
+                  Projected Equity: {(calculatePostMoneyEquity(safeInput)).toFixed(2)}%
                 </div>
               </div>
             </CardContent>
@@ -247,7 +246,7 @@ const SafeConverter = () => {
                       <tr key={safeInput.id} className="border-b">
                         <td className="py-2 px-4">{safeInput.investorName}</td>
                         <td className="py-2 px-4">{safeInput.type}</td>
-                        <td className="py-2 px-4">{(calculatePostMoneyEquity(safeInput) * 100).toFixed(2)}%</td>
+                        <td className="py-2 px-4">{(calculatePostMoneyEquity(safeInput)).toFixed(2)}%</td>
                         <td className="py-2 px-4">{formatAsCurrency(equityFinancingValuation)}</td>
                         <td className="py-2 px-4">{formatAsCurrency(safeInput.investmentAmount)}</td>
                         <td className="py-2 px-4">N/A</td> {/*  N/A since this row is for SAFE */}
