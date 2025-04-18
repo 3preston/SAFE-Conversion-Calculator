@@ -2,14 +2,14 @@
 
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import SafeValuationCap from './SafeValuationCap';
-import SafeDiscount from './SafeDiscount';
-import SafeMFN from './SafeMFN';
-import { cn } from '@/lib/utils';
-import { Button } from './ui/button';
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { Plus, X } from "lucide-react";
 
 type SafeInput = {
+  id: string;
   type: 'valuationCap' | 'discount' | 'mfn';
   valuationCap?: number;
   discountRate?: number;
@@ -18,18 +18,15 @@ type SafeInput = {
 };
 
 const SafeConverter = () => {
-  const [safeInputs, setSafeInputs] = useState<SafeInput[]>([
-    { type: 'valuationCap', investmentAmount: 100000, companyValuation: 5000000, valuationCap: 1000000 },
-    { type: 'discount', investmentAmount: 100000, companyValuation: 5000000, discountRate: 0.2 },
-    { type: 'mfn', investmentAmount: 100000, companyValuation: 5000000 },
-  ]);
-
-  const [valuationCapProjection, setValuationCapProjection] = useState<number | null>(null);
-  const [discountProjection, setDiscountProjection] = useState<number | null>(null);
-  const [mfnProjection, setMfnProjection] = useState<number | null>(null);
+  const [safeInputs, setSafeInputs] = useState<SafeInput[]>([]);
 
   const addSafeInput = (type: SafeInput['type']) => {
-    const newSafeInput: SafeInput = { type, investmentAmount: 100000, companyValuation: 5000000 };
+    const newSafeInput: SafeInput = {
+      id: Math.random().toString(36).substring(7),
+      type,
+      investmentAmount: 100000,
+      companyValuation: 5000000,
+    };
     if (type === 'valuationCap') {
       newSafeInput.valuationCap = 1000000;
     } else if (type === 'discount') {
@@ -38,10 +35,15 @@ const SafeConverter = () => {
     setSafeInputs([...safeInputs, newSafeInput]);
   };
 
-  const updateSafeInput = (index: number, updatedInput: Partial<SafeInput>) => {
-    const newSafeInputs = [...safeInputs];
-    newSafeInputs[index] = { ...newSafeInputs[index], ...updatedInput };
+  const updateSafeInput = (id: string, updatedInput: Partial<SafeInput>) => {
+    const newSafeInputs = safeInputs.map(safeInput =>
+      safeInput.id === id ? { ...safeInput, ...updatedInput } : safeInput
+    );
     setSafeInputs(newSafeInputs);
+  };
+
+  const removeSafeInput = (id: string) => {
+    setSafeInputs(safeInputs.filter(safeInput => safeInput.id !== id));
   };
 
   const calculateProjection = (safeInput: SafeInput) => {
@@ -59,79 +61,163 @@ const SafeConverter = () => {
 
   return (
     <div className="container py-10">
-      {safeInputs.map((safeInput, index) => (
-        <Card key={index} className="w-[400px] mb-4">
-          <CardHeader>
-            <CardTitle>SAFE Type: {safeInput.type}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {safeInput.type === 'valuationCap' && (
-              <SafeValuationCap
-                valuationCap={safeInput.valuationCap}
-                investmentAmount={safeInput.investmentAmount}
-                companyValuation={safeInput.companyValuation}
-                onValuationCapChange={(value) => updateSafeInput(index, { valuationCap: value })}
-                onInvestmentAmountChange={(value) => updateSafeInput(index, { investmentAmount: value })}
-                onCompanyValuationChange={(value) => updateSafeInput(index, { companyValuation: value })}
-                setProjection={(projection) => {
-                  setValuationCapProjection(projection);
-                }}
-              />
-            )}
-            {safeInput.type === 'discount' && (
-              <SafeDiscount
-                discountRate={safeInput.discountRate}
-                investmentAmount={safeInput.investmentAmount}
-                companyValuation={safeInput.companyValuation}
-                onDiscountRateChange={(value) => updateSafeInput(index, { discountRate: value })}
-                onInvestmentAmountChange={(value) => updateSafeInput(index, { investmentAmount: value })}
-                onCompanyValuationChange={(value) => updateSafeInput(index, { companyValuation: value })}
-                setProjection={(projection) => {
-                  setDiscountProjection(projection);
-                }}
-              />
-            )}
-            {safeInput.type === 'mfn' && (
-              <SafeMFN
-                investmentAmount={safeInput.investmentAmount}
-                companyValuation={safeInput.companyValuation}
-                onInvestmentAmountChange={(value) => updateSafeInput(index, { investmentAmount: value })}
-                onCompanyValuationChange={(value) => updateSafeInput(index, { companyValuation: value })}
-                setProjection={(projection) => {
-                  setMfnProjection(projection);
-                }}
-              />
-            )}
-            <div>
-              <p>Projected Equity: {calculateProjection(safeInput).toFixed(2)}%</p>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {safeInputs.map((safeInput) => (
+          <Card key={safeInput.id} className="bg-card text-card-foreground shadow-md rounded-lg overflow-hidden">
+            <CardHeader className="flex flex-row items-center justify-between p-4">
+              <CardTitle className="text-lg font-semibold">{safeInput.type.toUpperCase()} SAFE</CardTitle>
+              <Button variant="ghost" size="icon" onClick={() => removeSafeInput(safeInput.id)}>
+                <X className="h-4 w-4" />
+              </Button>
+            </CardHeader>
+            <CardContent className="p-4">
+              <div className="grid gap-4">
+                {safeInput.type === 'valuationCap' && (
+                  <>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <Label htmlFor={`valuationCap-${safeInput.id}`}>Valuation Cap</Label>
+                        <Input
+                          type="number"
+                          id={`valuationCap-${safeInput.id}`}
+                          value={safeInput.valuationCap}
+                          onChange={(e) => updateSafeInput(safeInput.id, { valuationCap: Number(e.target.value) })}
+                          className="bg-input border rounded-md focus:ring-accent focus:border-accent"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor={`investmentAmount-${safeInput.id}`}>Investment Amount</Label>
+                        <Input
+                          type="number"
+                          id={`investmentAmount-${safeInput.id}`}
+                          value={safeInput.investmentAmount}
+                          onChange={(e) => updateSafeInput(safeInput.id, { investmentAmount: Number(e.target.value) })}
+                          className="bg-input border rounded-md focus:ring-accent focus:border-accent"
+                        />
+                      </div>
+                    </div>
+                    <Label htmlFor={`companyValuation-${safeInput.id}`}>Company Valuation at Conversion</Label>
+                    <Input
+                      type="number"
+                      id={`companyValuation-${safeInput.id}`}
+                      value={safeInput.companyValuation}
+                      onChange={(e) => updateSafeInput(safeInput.id, { companyValuation: Number(e.target.value) })}
+                      className="bg-input border rounded-md focus:ring-accent focus:border-accent"
+                    />
+                  </>
+                )}
+                {safeInput.type === 'discount' && (
+                  <>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <Label htmlFor={`discountRate-${safeInput.id}`}>Discount Rate</Label>
+                        <Input
+                          type="number"
+                          id={`discountRate-${safeInput.id}`}
+                          value={safeInput.discountRate}
+                          onChange={(e) => updateSafeInput(safeInput.id, { discountRate: Number(e.target.value) })}
+                          className="bg-input border rounded-md focus:ring-accent focus:border-accent"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor={`investmentAmount-${safeInput.id}`}>Investment Amount</Label>
+                        <Input
+                          type="number"
+                          id={`investmentAmount-${safeInput.id}`}
+                          value={safeInput.investmentAmount}
+                          onChange={(e) => updateSafeInput(safeInput.id, { investmentAmount: Number(e.target.value) })}
+                          className="bg-input border rounded-md focus:ring-accent focus:border-accent"
+                        />
+                      </div>
+                    </div>
+                    <Label htmlFor={`companyValuation-${safeInput.id}`}>Company Valuation at Conversion</Label>
+                    <Input
+                      type="number"
+                      id={`companyValuation-${safeInput.id}`}
+                      value={safeInput.companyValuation}
+                      onChange={(e) => updateSafeInput(safeInput.id, { companyValuation: Number(e.target.value) })}
+                      className="bg-input border rounded-md focus:ring-accent focus:border-accent"
+                    />
+                  </>
+                )}
+                {safeInput.type === 'mfn' && (
+                  <>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <Label htmlFor={`investmentAmount-${safeInput.id}`}>Investment Amount</Label>
+                        <Input
+                          type="number"
+                          id={`investmentAmount-${safeInput.id}`}
+                          value={safeInput.investmentAmount}
+                          onChange={(e) => updateSafeInput(safeInput.id, { investmentAmount: Number(e.target.value) })}
+                          className="bg-input border rounded-md focus:ring-accent focus:border-accent"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor={`companyValuation-${safeInput.id}`}>Company Valuation at Conversion</Label>
+                        <Input
+                          type="number"
+                          id={`companyValuation-${safeInput.id}`}
+                          value={safeInput.companyValuation}
+                          onChange={(e) => updateSafeInput(safeInput.id, { companyValuation: Number(e.target.value) })}
+                          className="bg-input border rounded-md focus:ring-accent focus:border-accent"
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
+                <div className="text-right">
+                  Projected Equity: {(calculateProjection(safeInput)).toFixed(2)}%
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
 
-      <Button onClick={() => addSafeInput('valuationCap')} className="bg-accent text-accent-foreground">
-        Add Valuation Cap SAFE
-      </Button>
-      <Button onClick={() => addSafeInput('discount')} className="bg-accent text-accent-foreground">
-        Add Discount SAFE
-      </Button>
-      <Button onClick={() => addSafeInput('mfn')} className="bg-accent text-accent-foreground">
-        Add MFN SAFE
-      </Button>
+      <Separator className="my-6" />
+
+      <div className="flex justify-center space-x-4">
+        <Button onClick={() => addSafeInput('valuationCap')} className="bg-accent text-accent-foreground hover:bg-accent-foreground hover:text-accent rounded-full">
+          <Plus className="h-4 w-4 mr-2" /> Valuation Cap SAFE
+        </Button>
+        <Button onClick={() => addSafeInput('discount')} className="bg-accent text-accent-foreground hover:bg-accent-foreground hover:text-accent rounded-full">
+          <Plus className="h-4 w-4 mr-2" /> Discount SAFE
+        </Button>
+        <Button onClick={() => addSafeInput('mfn')} className="bg-accent text-accent-foreground hover:bg-accent-foreground hover:text-accent rounded-full">
+          <Plus className="h-4 w-4 mr-2" /> MFN SAFE
+        </Button>
+      </div>
 
       {safeInputs.length > 0 && (
-        <Card className="w-[400px] mt-4">
-          <CardHeader>
-            <CardTitle>Comparative Summary</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {safeInputs.map((safeInput, index) => (
-              <p key={index}>
-                {safeInput.type}: {calculateProjection(safeInput).toFixed(2)}%
-              </p>
-            ))}
-          </CardContent>
-        </Card>
+        <>
+          <Separator className="my-6" />
+          <Card className="w-full max-w-3xl mx-auto bg-card text-card-foreground shadow-md rounded-lg overflow-hidden">
+            <CardHeader className="p-4">
+              <CardTitle className="text-xl font-semibold">Comparative Summary</CardTitle>
+            </CardHeader>
+            <CardContent className="p-4">
+              <div className="overflow-x-auto">
+                <table className="min-w-full table-auto">
+                  <thead>
+                    <tr className="bg-secondary text-secondary-foreground">
+                      <th className="py-2 px-4 font-semibold text-left">SAFE Type</th>
+                      <th className="py-2 px-4 font-semibold text-left">Projected Equity</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {safeInputs.map((safeInput) => (
+                      <tr key={safeInput.id} className="border-b">
+                        <td className="py-2 px-4">{safeInput.type}</td>
+                        <td className="py-2 px-4">{(calculateProjection(safeInput)).toFixed(2)}%</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        </>
       )}
     </div>
   );
