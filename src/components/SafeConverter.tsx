@@ -78,7 +78,7 @@ const SafeConverter = () => {
     switch (safeInput.type) {
         case 'Valuation Cap SAFE': {
             if (!safeInput.valuationCap) return 0;
-            const effectiveValuation = Math.max(safeInput.valuationCap, equityFinancingValuation);
+            const effectiveValuation = Math.min(safeInput.valuationCap, equityFinancingValuation);
             postMoneyOwnership = safeInput.investmentAmount / effectiveValuation;
             break;
         }
