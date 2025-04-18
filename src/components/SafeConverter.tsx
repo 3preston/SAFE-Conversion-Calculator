@@ -20,6 +20,7 @@ type SafeInput = {
 const SafeConverter = () => {
   const [safeInputs, setSafeInputs] = useState<SafeInput[]>([]);
   const [equityFinancingValuation, setEquityFinancingValuation] = useState<number>(10000000);
+  const [equityFinancingInvestment, setEquityFinancingInvestment] = useState<number>(5000000); // New state for equity financing investment
 
   const addSafeInput = (type: SafeInput['type']) => {
     const newSafeInput: SafeInput = {
@@ -71,29 +72,30 @@ const SafeConverter = () => {
     return isNaN(parsed) ? undefined : parsed;
   };
 
-    const calculatePostMoneyEquity = (safeInput: SafeInput) => {
-        let postMoneyOwnership = 0;
+  const calculatePostMoneyEquity = (safeInput: SafeInput) => {
+    let postMoneyOwnership = 0;
 
-        switch (safeInput.type) {
-            case 'Valuation Cap SAFE': {
-                if (!safeInput.valuationCap) return 0;
+    switch (safeInput.type) {
+      case 'Valuation Cap SAFE': {
+        if (!safeInput.valuationCap) return 0;
+        postMoneyOwnership = Math.min(safeInput.investmentAmount / equityFinancingValuation, safeInput.investmentAmount / safeInput.valuationCap)
+        break;
+      }
+      case 'Discount SAFE': {
+        if (!safeInput.discountRate || !equityFinancingValuation) return 0;
+        postMoneyOwnership = safeInput.investmentAmount / (equityFinancingValuation * (1 - safeInput.discountRate));
+        break;
+      }
+      default:
+        return 0;
+    }
 
-                const effectiveValuation = Math.min(safeInput.valuationCap, equityFinancingValuation);
-                postMoneyOwnership = safeInput.investmentAmount / effectiveValuation;
-                break;
-            }
-            case 'Discount SAFE': {
-                if (!safeInput.discountRate || !equityFinancingValuation) return 0;
-                const discount = 1 - safeInput.discountRate;
-                postMoneyOwnership = safeInput.investmentAmount / (equityFinancingValuation * discount);
-                break;
-            }
-            default:
-                return 0;
-        }
+    return postMoneyOwnership * 100;
+  };
 
-        return postMoneyOwnership * 100;
-    };
+  const calculateEquityFinancingOwnership = () => {
+    return (equityFinancingInvestment / equityFinancingValuation) * 100;
+  };
 
 
   return (
@@ -113,6 +115,17 @@ const SafeConverter = () => {
               onChange={(e) => {
                 const parsedValue = parseNumber(e.target.value);
                 setEquityFinancingValuation(parsedValue !== undefined ? parsedValue : 0);
+              }}
+              className="bg-input border rounded-md focus:ring-accent focus:border-accent"
+            />
+            <Label htmlFor="equityFinancingInvestment">Equity Financing Investment</Label>
+            <Input
+              type="text"
+              id="equityFinancingInvestment"
+              value={formatAsCurrency(equityFinancingInvestment)}
+              onChange={(e) => {
+                const parsedValue = parseNumber(e.target.value);
+                setEquityFinancingInvestment(parsedValue !== undefined ? parsedValue : 0);
               }}
               className="bg-input border rounded-md focus:ring-accent focus:border-accent"
             />
@@ -224,6 +237,8 @@ const SafeConverter = () => {
                       <th className="py-2 px-4 font-semibold text-left">SAFE Type</th>
                       <th className="py-2 px-4 font-semibold text-left">Projected Equity</th>
                       <th className="py-2 px-4 font-semibold text-left">Equity Financing</th>
+                      <th className="py-2 px-4 font-semibold text-left">Equity Investment</th>
+                      <th className="py-2 px-4 font-semibold text-left">Equity Ownership</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -233,8 +248,18 @@ const SafeConverter = () => {
                         <td className="py-2 px-4">{safeInput.type}</td>
                         <td className="py-2 px-4">{(calculatePostMoneyEquity(safeInput)).toFixed(2)}%</td>
                         <td className="py-2 px-4">{formatAsCurrency(equityFinancingValuation)}</td>
+                        <td className="py-2 px-4">N/A</td> {/*  N/A since this row is for SAFE */}
+                        <td className="py-2 px-4">N/A</td> {/*  N/A since this row is for SAFE */}
                       </tr>
                     ))}
+                      <tr className="border-b">
+                          <td className="py-2 px-4">Equity Financing</td>
+                          <td className="py-2 px-4">Common Stock</td>
+                          <td className="py-2 px-4">{(calculateEquityFinancingOwnership()).toFixed(2)}%</td>
+                          <td className="py-2 px-4">{formatAsCurrency(equityFinancingValuation)}</td>
+                          <td className="py-2 px-4">{formatAsCurrency(equityFinancingInvestment)}</td>
+                          <td className="py-2 px-4">{(calculateEquityFinancingOwnership()).toFixed(2)}%</td>
+                      </tr>
                   </tbody>
                 </table>
               </div>
