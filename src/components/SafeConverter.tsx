@@ -15,11 +15,11 @@ type SafeInput = {
   valuationCap?: number;
   discountRate?: number;
   investmentAmount: number;
-  companyValuation: number;
 };
 
 const SafeConverter = () => {
   const [safeInputs, setSafeInputs] = useState<SafeInput[]>([]);
+    const [companyValuation, setCompanyValuation] = useState<number>(5000000);
 
   const addSafeInput = (type: SafeInput['type']) => {
     const newSafeInput: SafeInput = {
@@ -27,7 +27,6 @@ const SafeConverter = () => {
       investorName: `Investor ${safeInputs.length + 1}`,
       type,
       investmentAmount: 100000,
-      companyValuation: 5000000,
     };
     if (type === 'valuationCap') {
       newSafeInput.valuationCap = 1000000;
@@ -74,17 +73,22 @@ const SafeConverter = () => {
 
   const calculateProjection = (safeInput: SafeInput) => {
     switch (safeInput.type) {
-      case 'valuationCap':
-        // Post-money SAFE: investmentAmount / valuationCap * (companyValuation + investmentAmount) / companyValuation * 100
-        if (!safeInput.valuationCap || !safeInput.companyValuation) return 0;
-        return (safeInput.investmentAmount / safeInput.valuationCap) * ((safeInput.companyValuation + safeInput.investmentAmount) / safeInput.companyValuation) * 100;
-      case 'discount':
-        if (!safeInput.discountRate || !safeInput.companyValuation) return 0;
-        const discountedValuation = safeInput.companyValuation * (1 - safeInput.discountRate);
-        return (safeInput.investmentAmount / discountedValuation) * 100;
-      case 'mfn':
-        if (!safeInput.companyValuation) return 0;
-        return (safeInput.investmentAmount / safeInput.companyValuation) * 100;
+        case 'valuationCap': {
+            // This is the correct math for a post-money SAFE
+            if (!safeInput.valuationCap) return 0;
+            const ownership = safeInput.investmentAmount / safeInput.valuationCap;
+            return ownership * 100;
+        }
+        case 'discount': {
+            if (!safeInput.discountRate) return 0;
+            const discountedValuation = companyValuation * (1 - safeInput.discountRate);
+            const ownership = safeInput.investmentAmount / discountedValuation;
+            return ownership * 100;
+        }
+        case 'mfn': {
+            const ownership = safeInput.investmentAmount / companyValuation;
+            return ownership * 100;
+        }
       default:
         return 0;
     }
@@ -92,6 +96,28 @@ const SafeConverter = () => {
 
   return (
     <div className="container py-10">
+
+      <Card className="w-full max-w-3xl mx-auto bg-card text-card-foreground shadow-md rounded-lg overflow-hidden mb-6">
+        <CardHeader className="p-4">
+          <CardTitle className="text-xl font-semibold">Global Settings</CardTitle>
+        </CardHeader>
+        <CardContent className="p-4">
+          <div className="grid gap-4">
+            <Label htmlFor="companyValuation">Company Valuation at Conversion</Label>
+            <Input
+              type="text"
+              id="companyValuation"
+              value={formatAsCurrency(companyValuation)}
+              onChange={(e) => {
+                const parsedValue = parseNumber(e.target.value);
+                setCompanyValuation(parsedValue !== undefined ? parsedValue : 0);
+              }}
+              className="bg-input border rounded-md focus:ring-accent focus:border-accent"
+            />
+          </div>
+        </CardContent>
+      </Card>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {safeInputs.map((safeInput) => (
           <Card key={safeInput.id} className="bg-card text-card-foreground shadow-md rounded-lg overflow-hidden">
@@ -113,7 +139,7 @@ const SafeConverter = () => {
                 />
                 {(safeInput.type === 'valuationCap' || safeInput.type === 'discount') && (
                   <>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-1 gap-2">
                       {safeInput.type === 'valuationCap' && (
                         <div>
                           <Label htmlFor={`valuationCap-${safeInput.id}`}>Valuation Cap</Label>
@@ -158,22 +184,11 @@ const SafeConverter = () => {
                         />
                       </div>
                     </div>
-                    <Label htmlFor={`companyValuation-${safeInput.id}`}>Company Valuation at Conversion</Label>
-                    <Input
-                      type="text"
-                      id={`companyValuation-${safeInput.id}`}
-                      value={formatAsCurrency(safeInput.companyValuation)}
-                      onChange={(e) => {
-                        const parsedValue = parseNumber(e.target.value);
-                        updateSafeInput(safeInput.id, { companyValuation: parsedValue });
-                      }}
-                      className="bg-input border rounded-md focus:ring-accent focus:border-accent"
-                    />
                   </>
                 )}
                 {safeInput.type === 'mfn' && (
                   <>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-1 gap-2">
                       <div>
                         <Label htmlFor={`investmentAmount-${safeInput.id}`}>Investment Amount</Label>
                         <Input
@@ -183,19 +198,6 @@ const SafeConverter = () => {
                           onChange={(e) => {
                             const parsedValue = parseNumber(e.target.value);
                             updateSafeInput(safeInput.id, { investmentAmount: parsedValue });
-                          }}
-                          className="bg-input border rounded-md focus:ring-accent focus:border-accent"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor={`companyValuation-${safeInput.id}`}>Company Valuation at Conversion</Label>
-                        <Input
-                          type="text"
-                          id={`companyValuation-${safeInput.id}`}
-                          value={formatAsCurrency(safeInput.companyValuation)}
-                          onChange={(e) => {
-                            const parsedValue = parseNumber(e.target.value);
-                            updateSafeInput(safeInput.id, { companyValuation: parsedValue });
                           }}
                           className="bg-input border rounded-md focus:ring-accent focus:border-accent"
                         />
