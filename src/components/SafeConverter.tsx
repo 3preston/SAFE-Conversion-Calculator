@@ -75,7 +75,7 @@ const SafeConverter = () => {
   const calculateEquityShares = (safeInput: SafeInput): number => {
     let safeShares = 0;
     if (safeInput.type === 'Valuation Cap SAFE' && safeInput.valuationCap !== undefined) {
-      const effectiveValuation = Math.min(equityFinancingValuation, safeInput.valuationCap);
+      const effectiveValuation = Math.max(safeInput.valuationCap, equityFinancingValuation);
       safeShares = safeInput.investmentAmount / effectiveValuation * totalShares;
     } else if (safeInput.type === 'Discount SAFE' && safeInput.discountRate !== undefined) {
       const effectiveValuation = equityFinancingValuation * (1 - (safeInput.discountRate / 100));
@@ -87,7 +87,7 @@ const SafeConverter = () => {
   const calculatePostMoneyEquity = (safeInput: SafeInput): number => {
     let safeShares = 0;
     if (safeInput.type === 'Valuation Cap SAFE' && safeInput.valuationCap !== undefined) {
-      const effectiveValuation = Math.min(equityFinancingValuation, safeInput.valuationCap);
+      const effectiveValuation = Math.max(safeInput.valuationCap, equityFinancingValuation);
       safeShares = (safeInput.investmentAmount / effectiveValuation);
     } else if (safeInput.type === 'Discount SAFE' && safeInput.discountRate !== undefined) {
       const effectiveValuation = equityFinancingValuation * (1 - (safeInput.discountRate / 100));
@@ -295,7 +295,7 @@ const SafeConverter = () => {
                     <td className="py-2 px-4">Founders</td>
                     <td className="py-2 px-4">Common Stock</td>
                     <td className="py-2 px-4">{formatNumberWithCommas(foundersShares)}</td>
-                    <td className="py-2 px-4">{(foundersShares / (totalShares + safeInputs.reduce((acc, safeInput) => acc + calculateEquityShares(safeInput), 0) + (equityFinancingInvestment / equityFinancingValuation) * totalShares) * 100).toFixed(2)}%</td>
+                    <td className="py-2 px-4">{(foundersShares / (totalShares + safeInputs.reduce((acc, safeInput) => acc + calculateEquityShares(safeInput), 0) + equityFinancingInvestment) * 100).toFixed(2)}%</td>
                     <td className="py-2 px-4">-</td>
                   </tr>
                   {/* Employee Shares */}
@@ -303,7 +303,7 @@ const SafeConverter = () => {
                     <td className="py-2 px-4">Employee Pool</td>
                     <td className="py-2 px-4">Equity</td>
                     <td className="py-2 px-4">{formatNumberWithCommas(employeeShares)}</td>
-                    <td className="py-2 px-4">{(employeeShares / (totalShares + safeInputs.reduce((acc, safeInput) => acc + calculateEquityShares(safeInput), 0) + (equityFinancingInvestment / equityFinancingValuation) * totalShares) * 100).toFixed(2)}%</td>
+                    <td className="py-2 px-4">{(employeeShares / (totalShares + safeInputs.reduce((acc, safeInput) => acc + calculateEquityShares(safeInput), 0) + equityFinancingInvestment) * 100).toFixed(2)}%</td>
                     <td className="py-2 px-4">-</td>
                   </tr>
 
@@ -311,9 +311,9 @@ const SafeConverter = () => {
                     <tr className="border-b">
                       <td className="py-2 px-4">Equity Financing</td>
                       <td className="py-2 px-4">Common Stock</td>
-                      <td className="py-2 px-4">{formatNumberWithCommas((equityFinancingInvestment / equityFinancingValuation) * totalShares)}</td>
+                      <td className="py-2 px-4">{formatNumberWithCommas(equityFinancingInvestment)}</td>
                       <td className="py-2 px-4">
-                        {((equityFinancingInvestment / equityFinancingValuation) * totalShares / (totalShares + safeInputs.reduce((acc, safeInput) => acc + calculateEquityShares(safeInput), 0) + (equityFinancingInvestment / equityFinancingValuation) * totalShares) * 100).toFixed(2)}%
+                        {(equityFinancingInvestment / (totalShares + safeInputs.reduce((acc, safeInput) => acc + calculateEquityShares(safeInput), 0) + equityFinancingInvestment) * 100).toFixed(2)}%
                       </td>
                       <td className="py-2 px-4">{formatAsCurrency(equityFinancingInvestment)}</td>
                     </tr>
@@ -324,7 +324,7 @@ const SafeConverter = () => {
                         <td className="py-2 px-4">{safeInput.type}</td>
                         <td className="py-2 px-4">{formatNumberWithCommas(calculateEquityShares(safeInput))}</td>
                         <td className="py-2 px-4">
-                          {(calculateEquityShares(safeInput) / (totalShares + safeInputs.reduce((acc, safe) => acc + calculateEquityShares(safe), 0) + (equityFinancingInvestment / equityFinancingValuation) * totalShares) * 100).toFixed(2)}%
+                          {(calculateEquityShares(safeInput) / (totalShares + safeInputs.reduce((acc, safe) => acc + calculateEquityShares(safe), 0) + equityFinancingInvestment) * 100).toFixed(2)}%
                         </td>
                         <td className="py-2 px-4">{formatAsCurrency(safeInput.investmentAmount)}</td>
                       </tr>
