@@ -75,13 +75,14 @@ const SafeConverter = () => {
     const calculateEquityShares = (safeInput: SafeInput): number => {
         let safeShares = 0;
         if (safeInput.type === 'Valuation Cap SAFE' && safeInput.valuationCap !== undefined) {
-            safeShares = safeInput.investmentAmount / Math.max(safeInput.valuationCap, equityFinancingValuation) * totalShares;
+            // Calculate shares based on the valuation cap
+            safeShares = safeInput.investmentAmount / safeInput.valuationCap * totalShares;
         } else if (safeInput.type === 'Discount SAFE' && safeInput.discountRate !== undefined) {
+            // Calculate shares based on the discount rate
             safeShares = safeInput.investmentAmount / (equityFinancingValuation * (1 - (safeInput.discountRate / 100))) * totalShares;
         }
         return safeShares;
     };
-
     const equityFinancingShares = equityFinancingInvestment / equityFinancingValuation * totalShares;
 
     const calculateTotalShares = () => {
