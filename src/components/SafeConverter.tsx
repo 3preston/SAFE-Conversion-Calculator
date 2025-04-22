@@ -21,6 +21,10 @@ const SafeConverter = () => {
   const [safeInputs, setSafeInputs] = useState<SafeInput[]>([]);
   const [equityFinancingValuation, setEquityFinancingValuation] = useState<number>(10000000);
   const [equityFinancingInvestment, setEquityFinancingInvestment] = useState<number>(5000000);
+  const [companyValuation, setCompanyValuation] = useState<number>(1000000);
+  const [totalShares, setTotalShares] = useState<number>(10000000);
+  const [foundersShares, setFoundersShares] = useState<number>(2000000);
+  const [employeeEquity, setEmployeeEquity] = useState<number>(1000000);
 
   const addSafeInput = (type: SafeInput['type']) => {
     const newSafeInput: SafeInput = {
@@ -73,7 +77,7 @@ const SafeConverter = () => {
   };
 
   const calculatePostMoneyEquity = (safeInput: SafeInput) => {
-    if (!equityFinancingValuation || !equityFinancingInvestment) {
+    if (!equityFinancingValuation || !equityFinancingInvestment || !companyValuation) {
       return 0;
     }
 
@@ -98,6 +102,26 @@ const SafeConverter = () => {
     return (equityFinancingInvestment / equityFinancingValuation) * 100;
   };
 
+    // Calculate fully diluted shares
+    const calculateFullyDilutedShares = () => {
+        let safeShares = 0;
+        safeInputs.forEach(safe => {
+            let effectiveValuation: number;
+            if (safe.type === 'Valuation Cap SAFE' && safe.valuationCap !== undefined) {
+                effectiveValuation = Math.min(equityFinancingValuation, safe.valuationCap);
+                safeShares += safe.investmentAmount / effectiveValuation;
+            } else if (safe.type === 'Discount SAFE' && safe.discountRate !== undefined) {
+                effectiveValuation = equityFinancingValuation * (1 - (safe.discountRate / 100));
+                safeShares += safe.investmentAmount / effectiveValuation;
+            } else {
+                safeShares += safe.investmentAmount / equityFinancingValuation;
+            }
+        });
+
+        const equityFinancingShares = equityFinancingInvestment / equityFinancingValuation;
+        return totalShares + safeShares + equityFinancingShares;
+    };
+
   return (
     <div className="container py-10">
       <Card className="w-full max-w-3xl mx-auto bg-card text-card-foreground shadow-md rounded-lg overflow-hidden mb-6">
@@ -106,6 +130,39 @@ const SafeConverter = () => {
         </CardHeader>
         <CardContent className="p-4">
           <div className="grid gap-4">
+          <Label htmlFor="totalShares">Total Shares</Label>
+            <Input
+              type="text"
+              id="totalShares"
+              value={formatNumberWithCommas(totalShares)}
+              onChange={(e) => {
+                const parsedValue = parseNumber(e.target.value);
+                setTotalShares(parsedValue !== undefined ? parsedValue : 0);
+              }}
+              className="bg-input border rounded-md focus:ring-accent focus:border-accent"
+            />
+            <Label htmlFor="foundersShares">Founders Shares</Label>
+            <Input
+              type="text"
+              id="foundersShares"
+              value={formatNumberWithCommas(foundersShares)}
+              onChange={(e) => {
+                const parsedValue = parseNumber(e.target.value);
+                setFoundersShares(parsedValue !== undefined ? parsedValue : 0);
+              }}
+              className="bg-input border rounded-md focus:ring-accent focus:border-accent"
+            />
+            <Label htmlFor="employeeEquity">Employee Equity</Label>
+            <Input
+              type="text"
+              id="employeeEquity"
+              value={formatNumberWithCommas(employeeEquity)}
+              onChange={(e) => {
+                const parsedValue = parseNumber(e.target.value);
+                setEmployeeEquity(parsedValue !== undefined ? parsedValue : 0);
+              }}
+              className="bg-input border rounded-md focus:ring-accent focus:border-accent"
+            />
             <Label htmlFor="equityFinancingValuation">Equity Financing Valuation</Label>
             <Input
               type="text"
@@ -125,6 +182,17 @@ const SafeConverter = () => {
               onChange={(e) => {
                 const parsedValue = parseNumber(e.target.value);
                 setEquityFinancingInvestment(parsedValue !== undefined ? parsedValue : 0);
+              }}
+              className="bg-input border rounded-md focus:ring-accent focus:border-accent"
+            />
+            <Label htmlFor="companyValuation">Company Valuation at Conversion</Label>
+            <Input
+              type="text"
+              id="companyValuation"
+              value={formatAsCurrency(companyValuation)}
+              onChange={(e) => {
+                const parsedValue = parseNumber(e.target.value);
+                setCompanyValuation(parsedValue !== undefined ? parsedValue : 0);
               }}
               className="bg-input border rounded-md focus:ring-accent focus:border-accent"
             />
@@ -235,17 +303,30 @@ const SafeConverter = () => {
                       <th className="py-2 px-4 font-semibold text-left">Investor Name</th>
                       <th className="py-2 px-4 font-semibold text-left">SAFE Type</th>
                       <th className="py-2 px-4 font-semibold text-left">Equity Post Conversion</th>
-                      <th className="py-2 px-4 font-semibold text-left">Equity Financing Valuation</th>
                       <th className="py-2 px-4 font-semibold text-left">Investment Amount</th>
                     </tr>
                   </thead>
                   <tbody>
+                    {/* Founders Shares */}
+                    <tr className="border-b">
+                        <td className="py-2 px-4">Founders</td>
+                        <td className="py-2 px-4">Common Stock</td>
+                        <td className="py-2 px-4">N/A</td>
+                        <td className="py-2 px-4">{formatNumberWithCommas(foundersShares)}</td>
+                    </tr>
+                    {/* Employee Equity */}
+                    <tr className="border-b">
+                        <td className="py-2 px-4">Employee Pool</td>
+                        <td className="py-2 px-4">Equity</td>
+                        <td className="py-2 px-4">N/A</td>
+                        <td className="py-2 px-4">{formatNumberWithCommas(employeeEquity)}</td>
+                    </tr>
+                    {/* SAFE Inputs */}
                     {safeInputs.map((safeInput) => (
                       <tr key={safeInput.id} className="border-b">
                         <td className="py-2 px-4">{safeInput.investorName}</td>
                         <td className="py-2 px-4">{safeInput.type}</td>
                         <td className="py-2 px-4">{(calculatePostMoneyEquity(safeInput)).toFixed(2)}%</td>
-                        <td className="py-2 px-4">{formatAsCurrency(equityFinancingValuation)}</td>
                         <td className="py-2 px-4">{formatAsCurrency(safeInput.investmentAmount)}</td>
                       </tr>
                     ))}
@@ -253,7 +334,6 @@ const SafeConverter = () => {
                       <td className="py-2 px-4">Equity Financing</td>
                       <td className="py-2 px-4">Common Stock</td>
                       <td className="py-2 px-4">{(calculateEquityFinancingOwnership()).toFixed(2)}%</td>
-                      <td className="py-2 px-4">{formatAsCurrency(equityFinancingValuation)}</td>
                       <td className="py-2 px-4">{formatAsCurrency(equityFinancingInvestment)}</td>
                     </tr>
                   </tbody>
