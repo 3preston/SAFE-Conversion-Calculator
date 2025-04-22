@@ -26,11 +26,11 @@ const SafeConverter = () => {
   const [foundersShares, setFoundersShares] = useState<number>(2000000);
   const [employeeShares, setEmployeeShares] = useState<number>(1000000);
 
-  const addSafeInput = () => {
+  const addSafeInput = (type: 'Valuation Cap SAFE' | 'Discount SAFE') => {
     const newSafeInput: SafeInput = {
       id: Math.random().toString(36).substring(7),
       investorName: `Investor ${safeInputs.length + 1}`,
-      type: 'Valuation Cap SAFE',
+      type: type,
       investmentAmount: 100000,
       valuationCap: 1000000,
     };
@@ -193,98 +193,86 @@ const SafeConverter = () => {
       </div>
 
         <div className="flex justify-center space-x-4 mb-6">
-            <Button onClick={() => setSafeInputs(prev => [...prev, {
-                id: Math.random().toString(36).substring(7),
-                investorName: `Investor ${safeInputs.length + 1}`,
-                type: 'Valuation Cap SAFE',
-                investmentAmount: 100000,
-                valuationCap: 1000000,
-            }])} className="bg-accent text-accent-foreground hover:bg-accent-foreground hover:text-accent rounded-full">
+            <Button onClick={() => addSafeInput('Valuation Cap SAFE')} className="bg-accent text-accent-foreground hover:bg-accent-foreground hover:text-accent rounded-full">
                 <Plus className="h-4 w-4 mr-2" /> Valuation Cap SAFE
             </Button>
-            <Button onClick={() => setSafeInputs(prev => [...prev, {
-                id: Math.random().toString(36).substring(7),
-                investorName: `Investor ${safeInputs.length + 1}`,
-                type: 'Discount SAFE',
-                investmentAmount: 100000,
-                discountRate: 20,
-            }])} className="bg-accent text-accent-foreground hover:bg-accent-foreground hover:text-accent rounded-full">
+            <Button onClick={() => addSafeInput('Discount SAFE')} className="bg-accent text-accent-foreground hover:bg-accent-foreground hover:text-accent rounded-full">
                 <Plus className="h-4 w-4 mr-2" /> Discount SAFE
             </Button>
         </div>
-        
-        <div className="w-full max-w-3xl mx-auto mb-6 space-x-4">
-      {safeInputs.map((safeInput, index) => (
-        <Card key={safeInput.id} className="w-1/2 bg-card text-card-foreground shadow-md rounded-lg overflow-hidden">
-          <CardHeader className="flex flex-row items-center justify-between p-4">
-            <CardTitle className="text-lg font-semibold">{safeInput.type.toUpperCase()}</CardTitle>
-            <Button variant="ghost" size="icon" onClick={() => removeSafeInput(safeInput.id)}>
-              <X className="h-4 w-4" />
-            </Button>
-          </CardHeader>
-          <CardContent className="p-4">
-            <div className="grid gap-4">
-              <Label htmlFor={`investorName-${safeInput.id}`}>Investor Name</Label>
-              <Input
-                type="text"
-                id={`investorName-${safeInput.id}`}
-                value={safeInput.investorName}
-                onChange={(e) => updateSafeInput(safeInput.id, { investorName: e.target.value })}
-                className="bg-input border rounded-md focus:ring-accent focus:border-accent"
-              />
-              {(safeInput.type === 'Valuation Cap SAFE' || safeInput.type === 'Discount SAFE') && (
-                <>
-                  <div className="grid grid-cols-1 gap-2">
-                    {safeInput.type === 'Valuation Cap SAFE' && (
-                      <div>
-                        <Label htmlFor={`valuationCap-${safeInput.id}`}>Valuation Cap</Label>
-                        <Input
-                          type="text"
-                          id={`valuationCap-${safeInput.id}`}
-                          value={formatAsCurrency(safeInput.valuationCap)}
-                          onChange={(e) => {
-                            const parsedValue = parseNumber(e.target.value);
-                            updateSafeInput(safeInput.id, { valuationCap: parsedValue });
-                          }}
-                          className="bg-input border rounded-md focus:ring-accent focus:border-accent"
-                        />
+
+        <div className="grid grid-cols-2 gap-4 w-full max-w-3xl mx-auto mb-6">
+          {safeInputs.map((safeInput, index) => (
+            <Card key={safeInput.id} className="bg-card text-card-foreground shadow-md rounded-lg overflow-hidden">
+              <CardHeader className="flex flex-row items-center justify-between p-4">
+                <CardTitle className="text-lg font-semibold">{safeInput.type.toUpperCase()}</CardTitle>
+                <Button variant="ghost" size="icon" onClick={() => removeSafeInput(safeInput.id)}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </CardHeader>
+              <CardContent className="p-4">
+                <div className="grid gap-4">
+                  <Label htmlFor={`investorName-${safeInput.id}`}>Investor Name</Label>
+                  <Input
+                    type="text"
+                    id={`investorName-${safeInput.id}`}
+                    value={safeInput.investorName}
+                    onChange={(e) => updateSafeInput(safeInput.id, { investorName: e.target.value })}
+                    className="bg-input border rounded-md focus:ring-accent focus:border-accent"
+                  />
+                  {(safeInput.type === 'Valuation Cap SAFE' || safeInput.type === 'Discount SAFE') && (
+                    <>
+                      <div className="grid grid-cols-1 gap-2">
+                        {safeInput.type === 'Valuation Cap SAFE' && (
+                          <div>
+                            <Label htmlFor={`valuationCap-${safeInput.id}`}>Valuation Cap</Label>
+                            <Input
+                              type="text"
+                              id={`valuationCap-${safeInput.id}`}
+                              value={formatAsCurrency(safeInput.valuationCap)}
+                              onChange={(e) => {
+                                const parsedValue = parseNumber(e.target.value);
+                                updateSafeInput(safeInput.id, { valuationCap: parsedValue });
+                              }}
+                              className="bg-input border rounded-md focus:ring-accent focus:border-accent"
+                            />
+                          </div>
+                        )}
+                        {safeInput.type === 'Discount SAFE' && (
+                          <div>
+                            <Label htmlFor={`discountRate-${safeInput.id}`}>Discount Rate</Label>
+                            <Input
+                              type="text"
+                              id={`discountRate-${safeInput.id}`}
+                              value={(safeInput.discountRate ?? 0).toString()}
+                              onChange={(e) => {
+                                const parsedValue = parseNumber(e.target.value);
+                                updateSafeInput(safeInput.id, { discountRate: parsedValue });
+                              }}
+                              className="bg-input border rounded-md focus:ring-accent focus:border-accent"
+                            />
+                          </div>
+                        )}
+                        <div>
+                          <Label htmlFor={`investmentAmount-${safeInput.id}`}>Investment Amount</Label>
+                          <Input
+                            type="text"
+                            id={`investmentAmount-${safeInput.id}`}
+                            value={formatAsCurrency(safeInput.investmentAmount)}
+                            onChange={(e) => {
+                              const parsedValue = parseNumber(e.target.value);
+                              updateSafeInput(safeInput.id, { investmentAmount: parsedValue });
+                            }}
+                            className="bg-input border rounded-md focus:ring-accent focus:border-accent"
+                          />
+                        </div>
                       </div>
-                    )}
-                    {safeInput.type === 'Discount SAFE' && (
-                      <div>
-                        <Label htmlFor={`discountRate-${safeInput.id}`}>Discount Rate</Label>
-                        <Input
-                          type="text"
-                          id={`discountRate-${safeInput.id}`}
-                          value={(safeInput.discountRate ?? 0).toString()}
-                          onChange={(e) => {
-                            const parsedValue = parseNumber(e.target.value);
-                            updateSafeInput(safeInput.id, { discountRate: parsedValue });
-                          }}
-                          className="bg-input border rounded-md focus:ring-accent focus:border-accent"
-                        />
-                      </div>
-                    )}
-                    <div>
-                      <Label htmlFor={`investmentAmount-${safeInput.id}`}>Investment Amount</Label>
-                      <Input
-                        type="text"
-                        id={`investmentAmount-${safeInput.id}`}
-                        value={formatAsCurrency(safeInput.investmentAmount)}
-                        onChange={(e) => {
-                          const parsedValue = parseNumber(e.target.value);
-                          updateSafeInput(safeInput.id, { investmentAmount: parsedValue });
-                        }}
-                        className="bg-input border rounded-md focus:ring-accent focus:border-accent"
-                      />
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+                    </>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
       <Separator className="my-6" />
