@@ -113,72 +113,51 @@ const SafeConverter = () => {
         <h1 className="text-4xl font-bold text-center mb-8">
             SAFE Conversion Calculator
         </h1>
-
-      <Card className="w-full max-w-3xl mx-auto bg-card text-card-foreground shadow-md rounded-lg overflow-hidden mb-6">
-        <CardHeader className="p-4">
-          <CardTitle className="text-xl font-semibold">Company Structure</CardTitle>
-        </CardHeader>
-        <CardContent className="p-4">
-          <div className="grid gap-4">
-            <Label htmlFor="totalShares">Total Shares</Label>
-            <Input
-              type="text"
-              id="totalShares"
-              value={formatNumberWithCommas(totalShares)}
-              onChange={(e) => {
-                const parsedValue = parseNumber(e.target.value);
-                setTotalShares(parsedValue !== undefined ? parsedValue : 0);
-              }}
-              className="bg-input border rounded-md focus:ring-accent focus:border-accent"
-            />
-            <Label htmlFor="foundersShares">Founders Shares</Label>
-            <Input
-              type="text"
-              id="foundersShares"
-              value={formatNumberWithCommas(foundersShares)}
-              onChange={(e) => {
-                const parsedValue = parseNumber(e.target.value);
-                setFoundersShares(parsedValue !== undefined ? parsedValue : 0);
-              }}
-              className="bg-input border rounded-md focus:ring-accent focus:border-accent"
-            />
-            <Label htmlFor="employeeShares">Employee Shares</Label>
-            <Input
-              type="text"
-              id="employeeShares"
-              value={formatNumberWithCommas(employeeShares)}
-              onChange={(e) => {
-                const parsedValue = parseNumber(e.target.value);
-                setEmployeeShares(parsedValue !== undefined ? parsedValue : 0);
-              }}
-              className="bg-input border rounded-md focus:ring-accent focus:border-accent"
-            />
-          </div>
-        </CardContent>
-      </Card>
         
-        <div className="flex justify-center space-x-4 mb-6">
-            <Button onClick={() => setSafeInputs(prev => [...prev, {
-                id: Math.random().toString(36).substring(7),
-                investorName: `Investor ${safeInputs.length + 1}`,
-                type: 'Valuation Cap SAFE',
-                investmentAmount: 100000,
-                valuationCap: 1000000,
-            }])} className="bg-accent text-accent-foreground hover:bg-accent-foreground hover:text-accent rounded-full">
-                <Plus className="h-4 w-4 mr-2" /> Valuation Cap SAFE
-            </Button>
-            <Button onClick={() => setSafeInputs(prev => [...prev, {
-                id: Math.random().toString(36).substring(7),
-                investorName: `Investor ${safeInputs.length + 1}`,
-                type: 'Discount SAFE',
-                investmentAmount: 100000,
-                discountRate: 20,
-            }])} className="bg-accent text-accent-foreground hover:bg-accent-foreground hover:text-accent rounded-full">
-                <Plus className="h-4 w-4 mr-2" /> Discount SAFE
-            </Button>
-        </div>
-        
-        <div className="flex w-full max-w-3xl mx-auto mb-6 space-x-4">
+      <div className="flex w-full max-w-3xl mx-auto mb-6 space-x-4">
+        <Card className="w-1/2 bg-card text-card-foreground shadow-md rounded-lg overflow-hidden">
+            <CardHeader className="p-4">
+                <CardTitle className="text-xl font-semibold">Company Structure</CardTitle>
+            </CardHeader>
+            <CardContent className="p-4">
+                <div className="grid gap-4">
+                    <Label htmlFor="totalShares">Total Shares</Label>
+                    <Input
+                        type="text"
+                        id="totalShares"
+                        value={formatNumberWithCommas(totalShares)}
+                        onChange={(e) => {
+                            const parsedValue = parseNumber(e.target.value);
+                            setTotalShares(parsedValue !== undefined ? parsedValue : 0);
+                        }}
+                        className="bg-input border rounded-md focus:ring-accent focus:border-accent"
+                    />
+                    <Label htmlFor="foundersShares">Founders Shares</Label>
+                    <Input
+                        type="text"
+                        id="foundersShares"
+                        value={formatNumberWithCommas(foundersShares)}
+                        onChange={(e) => {
+                            const parsedValue = parseNumber(e.target.value);
+                            setFoundersShares(parsedValue !== undefined ? parsedValue : 0);
+                        }}
+                        className="bg-input border rounded-md focus:ring-accent focus:border-accent"
+                    />
+                    <Label htmlFor="employeeShares">Employee Shares</Label>
+                    <Input
+                        type="text"
+                        id="employeeShares"
+                        value={formatNumberWithCommas(employeeShares)}
+                        onChange={(e) => {
+                            const parsedValue = parseNumber(e.target.value);
+                            setEmployeeShares(parsedValue !== undefined ? parsedValue : 0);
+                        }}
+                        className="bg-input border rounded-md focus:ring-accent focus:border-accent"
+                    />
+                </div>
+            </CardContent>
+        </Card>
+      
         <Card className="w-1/2 bg-card text-card-foreground shadow-md rounded-lg overflow-hidden">
             <CardHeader className="p-4">
                 <CardTitle className="text-xl font-semibold">Equity Financing</CardTitle>
@@ -210,7 +189,30 @@ const SafeConverter = () => {
                 </div>
             </CardContent>
         </Card>
+      </div>
 
+        <div className="flex justify-center space-x-4 mb-6">
+            <Button onClick={() => setSafeInputs(prev => [...prev, {
+                id: Math.random().toString(36).substring(7),
+                investorName: `Investor ${safeInputs.length + 1}`,
+                type: 'Valuation Cap SAFE',
+                investmentAmount: 100000,
+                valuationCap: 1000000,
+            }])} className="bg-accent text-accent-foreground hover:bg-accent-foreground hover:text-accent rounded-full">
+                <Plus className="h-4 w-4 mr-2" /> Valuation Cap SAFE
+            </Button>
+            <Button onClick={() => setSafeInputs(prev => [...prev, {
+                id: Math.random().toString(36).substring(7),
+                investorName: `Investor ${safeInputs.length + 1}`,
+                type: 'Discount SAFE',
+                investmentAmount: 100000,
+                discountRate: 20,
+            }])} className="bg-accent text-accent-foreground hover:bg-accent-foreground hover:text-accent rounded-full">
+                <Plus className="h-4 w-4 mr-2" /> Discount SAFE
+            </Button>
+        </div>
+        
+        <div className="w-full max-w-3xl mx-auto mb-6 space-x-4">
       {safeInputs.map((safeInput, index) => (
         <Card key={safeInput.id} className="bg-card text-card-foreground shadow-md rounded-lg overflow-hidden">
           <CardHeader className="flex flex-row items-center justify-between p-4">
