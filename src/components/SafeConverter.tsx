@@ -76,41 +76,33 @@ const SafeConverter = () => {
     return isNaN(parsed) ? undefined : parsed;
   };
 
-  const calculatePostMoneyEquity = (safeInput: SafeInput) => {
-    let effectiveValuation: number;
-    if (safeInput.type === 'Valuation Cap SAFE' && safeInput.valuationCap !== undefined) {
-      effectiveValuation = Math.min(equityFinancingValuation, safeInput.valuationCap);
-    } else if (safeInput.type === 'Discount SAFE' && safeInput.discountRate !== undefined) {
-      effectiveValuation = equityFinancingValuation / (1 - (safeInput.discountRate / 100));
-    }
-    else {
-      effectiveValuation = equityFinancingValuation;
-    }
-
-    const safeOwnership = (safeInput.investmentAmount / effectiveValuation) * 100;
-    return safeOwnership;
-  };
-
-    const calculateFoundersEquity = () => {
-        if (!totalShares) {
-            return 0;
+    const calculatePostMoneyEquity = (safeInput: SafeInput, totalEquity: number) => {
+        let effectiveValuation: number;
+        if (safeInput.type === 'Valuation Cap SAFE' && safeInput.valuationCap !== undefined) {
+            effectiveValuation = Math.min(equityFinancingValuation, safeInput.valuationCap);
+        } else if (safeInput.type === 'Discount SAFE' && safeInput.discountRate !== undefined) {
+            effectiveValuation = equityFinancingValuation * (1 - (safeInput.discountRate / 100));
         }
-        return (foundersShares / totalShares) * 100;
+        else {
+            effectiveValuation = equityFinancingValuation;
+        }
+
+        const safeOwnership = (safeInput.investmentAmount / effectiveValuation) * totalEquity;
+        return safeOwnership;
     };
 
-    const calculateEmployeeEquity = () => {
-        if (!totalShares) {
-            return 0;
-        }
-        return (employeeShares / totalShares) * 100;
+    const calculateFoundersEquity = (totalEquity: number) => {
+        return (foundersShares / totalShares) * totalEquity;
     };
 
-  const calculateEquityFinancingOwnership = () => {
-    if (!equityFinancingValuation) {
-      return 0;
-    }
-    return (equityFinancingInvestment / equityFinancingValuation) * 100;
-  };
+    const calculateEmployeeEquity = (totalEquity: number) => {
+        return (employeeShares / totalShares) * totalEquity;
+    };
+
+    const calculateEquityFinancingOwnership = (totalEquity: number) => {
+        return (equityFinancingInvestment / equityFinancingValuation) * totalEquity;
+    };
+
 
   return (
     <div className="container py-10">
@@ -142,7 +134,7 @@ const SafeConverter = () => {
               }}
               className="bg-input border rounded-md focus:ring-accent focus:border-accent"
             />
-            <Label htmlFor="employeeShares">Employee Pool</Label>
+            <Label htmlFor="employeeShares">Employee Shares</Label>
             <Input
               type="text"
               id="employeeShares"
@@ -257,9 +249,6 @@ const SafeConverter = () => {
                     </div>
                   </>
                 )}
-                <div className="text-right">
-                  Equity %: {(calculatePostMoneyEquity(safeInput)).toFixed(2)}%
-                </div>
               </div>
             </CardContent>
           </Card>
@@ -301,30 +290,51 @@ const SafeConverter = () => {
                       <tr className="border-b">
                           <td className="py-2 px-4">Founders</td>
                           <td className="py-2 px-4">Common Stock</td>
-                          <td className="py-2 px-4">{(calculateFoundersEquity()).toFixed(2)}%</td>
+                          <td className="py-2 px-4">{(calculateFoundersEquity(1)).toFixed(2)}%</td>
                           <td className="py-2 px-4">-</td>
                       </tr>
                       {/* Employee Shares */}
                       <tr className="border-b">
                           <td className="py-2 px-4">Employee Pool</td>
                           <td className="py-2 px-4">Equity</td>
-                          <td className="py-2 px-4">{(calculateEmployeeEquity()).toFixed(2)}%</td>
+                          <td className="py-2 px-4">{(calculateEmployeeEquity(1)).toFixed(2)}%</td>
                           <td className="py-2 px-4">-</td>
                       </tr>
-                    {safeInputs.map((safeInput) => (
-                      <tr key={safeInput.id} className="border-b">
-                        <td className="py-2 px-4">{safeInput.investorName}</td>
-                        <td className="py-2 px-4">{safeInput.type}</td>
-                        <td className="py-2 px-4">{(calculatePostMoneyEquity(safeInput)).toFixed(2)}%</td>
-                        <td className="py-2 px-4">{formatAsCurrency(safeInput.investmentAmount)}</td>
-                      </tr>
-                    ))}
-                    <tr className="border-b">
-                      <td className="py-2 px-4">Equity Financing</td>
-                      <td className="py-2 px-4">Common Stock</td>
-                      <td className="py-2 px-4">{(calculateEquityFinancingOwnership()).toFixed(2)}%</td>
-                      <td className="py-2 px-4">{formatAsCurrency(equityFinancingInvestment)}</td>
-                    </tr>
+                    {(() => {
+                      let totalSafeEquity = 0;
+
+                      // Calculate total SAFE equity
+                      safeInputs.forEach(safeInput => {
+                          totalSafeEquity += safeInput.type === 'Valuation Cap SAFE' && safeInput.valuationCap !== undefined ?
+                              (safeInput.investmentAmount / Math.min(equityFinancingValuation, safeInput.valuationCap)) :
+                              (safeInput.investmentAmount / (equityFinancingValuation * (1 - (safeInput.discountRate ? safeInput.discountRate / 100 : 0))));
+                      });
+
+                      // Calculate total equity from common stock and SAFE investments
+                      const totalEquity = 1 / (1 + totalSafeEquity + (equityFinancingInvestment / equityFinancingValuation));
+
+                      return (
+                          <>
+                              {safeInputs.map((safeInput) => {
+                                  const equity = calculatePostMoneyEquity(safeInput, totalEquity);
+                                  return (
+                                      <tr key={safeInput.id} className="border-b">
+                                          <td className="py-2 px-4">{safeInput.investorName}</td>
+                                          <td className="py-2 px-4">{safeInput.type}</td>
+                                          <td className="py-2 px-4">{(equity * 100).toFixed(2)}%</td>
+                                          <td className="py-2 px-4">{formatAsCurrency(safeInput.investmentAmount)}</td>
+                                      </tr>
+                                  );
+                              })}
+                              <tr className="border-b">
+                                  <td className="py-2 px-4">Equity Financing</td>
+                                  <td className="py-2 px-4">Common Stock</td>
+                                  <td className="py-2 px-4">{(calculateEquityFinancingOwnership(totalEquity) * 100).toFixed(2)}%</td>
+                                  <td className="py-2 px-4">{formatAsCurrency(equityFinancingInvestment)}</td>
+                              </tr>
+                          </>
+                      );
+                    })()}
                   </tbody>
                 </table>
               </div>
