@@ -76,7 +76,7 @@ const SafeConverter = () => {
         let safeShares = 0;
         if (safeInput.type === 'Valuation Cap SAFE' && safeInput.valuationCap !== undefined) {
             // Calculate shares based on the valuation cap
-            safeShares = safeInput.investmentAmount / safeInput.valuationCap * totalShares;
+            safeShares = Math.min(safeInput.investmentAmount / safeInput.valuationCap, equityFinancingInvestment / equityFinancingValuation) * totalShares;
         } else if (safeInput.type === 'Discount SAFE' && safeInput.discountRate !== undefined) {
             // Calculate shares based on the discount rate
             safeShares = safeInput.investmentAmount / (equityFinancingValuation * (1 - (safeInput.discountRate / 100))) * totalShares;
@@ -140,6 +140,27 @@ const SafeConverter = () => {
           </div>
         </CardContent>
       </Card>
+
+      <div className="flex justify-center space-x-4 mb-6">
+        <Button onClick={() => setSafeInputs(prev => [...prev, {
+          id: Math.random().toString(36).substring(7),
+          investorName: `Investor ${safeInputs.length + 1}`,
+          type: 'Valuation Cap SAFE',
+          investmentAmount: 100000,
+          valuationCap: 1000000,
+        }])} className="bg-accent text-accent-foreground hover:bg-accent-foreground hover:text-accent rounded-full">
+          <Plus className="h-4 w-4 mr-2" /> Valuation Cap SAFE
+        </Button>
+        <Button onClick={() => setSafeInputs(prev => [...prev, {
+          id: Math.random().toString(36).substring(7),
+          investorName: `Investor ${safeInputs.length + 1}`,
+          type: 'Discount SAFE',
+          investmentAmount: 100000,
+          discountRate: 20,
+        }])} className="bg-accent text-accent-foreground hover:bg-accent-foreground hover:text-accent rounded-full">
+          <Plus className="h-4 w-4 mr-2" /> Discount SAFE
+        </Button>
+      </div>
 
       <Card className="w-full max-w-3xl mx-auto bg-card text-card-foreground shadow-md rounded-lg overflow-hidden mb-6">
         <CardHeader className="p-4">
@@ -247,95 +268,69 @@ const SafeConverter = () => {
 
       <Separator className="my-6" />
 
-      <div className="flex justify-center space-x-4">
-        <Button onClick={() => setSafeInputs(prev => [...prev, {
-          id: Math.random().toString(36).substring(7),
-          investorName: `Investor ${safeInputs.length + 1}`,
-          type: 'Valuation Cap SAFE',
-          investmentAmount: 100000,
-          valuationCap: 1000000,
-        }])} className="bg-accent text-accent-foreground hover:bg-accent-foreground hover:text-accent rounded-full">
-          <Plus className="h-4 w-4 mr-2" /> Valuation Cap SAFE
-        </Button>
-        <Button onClick={() => setSafeInputs(prev => [...prev, {
-          id: Math.random().toString(36).substring(7),
-          investorName: `Investor ${safeInputs.length + 1}`,
-          type: 'Discount SAFE',
-          investmentAmount: 100000,
-          discountRate: 20,
-        }])} className="bg-accent text-accent-foreground hover:bg-accent-foreground hover:text-accent rounded-full">
-          <Plus className="h-4 w-4 mr-2" /> Discount SAFE
-        </Button>
-      </div>
+      <Card className="w-full max-w-3xl mx-auto bg-card text-card-foreground shadow-md rounded-lg overflow-hidden">
+        <CardHeader className="p-4">
+          <CardTitle className="text-xl font-semibold">Capitalization Table</CardTitle>
+        </CardHeader>
+        <div style={{ fontSize: '0.8em', fontStyle: 'italic', textAlign: 'center' }}>(Post Conversion)</div>
+        <CardContent className="p-4">
+          <div className="overflow-x-auto">
+            <table className="min-w-full table-auto">
+              <thead>
+                <tr className="bg-secondary text-secondary-foreground">
+                  <th className="py-2 px-4 font-semibold text-left">Investor Name</th>
+                  <th className="py-2 px-4 font-semibold text-left">SAFE Type</th>
+                  <th className="py-2 px-4 font-semibold text-left">Shares</th>
+                  <th className="py-2 px-4 font-semibold text-left">Equity %</th>
+                  <th className="py-2 px-4 font-semibold text-left">Investment Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+              {/* Founders Shares */}
+              <tr className="border-b">
+                <td className="py-2 px-4">Founders</td>
+                <td className="py-2 px-4">Common Stock</td>
+                <td className="py-2 px-4">{formatNumberWithCommas(foundersShares)}</td>
+                <td className="py-2 px-4">{(foundersShares / totalCapTableShares * 100).toFixed(2)}%</td>
+                <td className="py-2 px-4">-</td>
+              </tr>
+              {/* Employee Shares */}
+              <tr className="border-b">
+                <td className="py-2 px-4">Employee Pool</td>
+                <td className="py-2 px-4">Equity</td>
+                <td className="py-2 px-4">{formatNumberWithCommas(employeeShares)}</td>
+                <td className="py-2 px-4">{(employeeShares / totalCapTableShares * 100).toFixed(2)}%</td>
+                <td className="py-2 px-4">-</td>
+              </tr>
 
-      {safeInputs.length > 0 && (
-        <>
-          <Separator className="my-6" />
-          <Card className="w-full max-w-3xl mx-auto bg-card text-card-foreground shadow-md rounded-lg overflow-hidden">
-            <CardHeader className="p-4">
-              <CardTitle className="text-xl font-semibold">Capitalization Table</CardTitle>
-            </CardHeader>
-            <div style={{ fontSize: '0.8em', fontStyle: 'italic', textAlign: 'center' }}>(Post Conversion)</div>
-            <CardContent className="p-4">
-              <div className="overflow-x-auto">
-                <table className="min-w-full table-auto">
-                  <thead>
-                    <tr className="bg-secondary text-secondary-foreground">
-                      <th className="py-2 px-4 font-semibold text-left">Investor Name</th>
-                      <th className="py-2 px-4 font-semibold text-left">SAFE Type</th>
-                      <th className="py-2 px-4 font-semibold text-left">Shares</th>
-                      <th className="py-2 px-4 font-semibold text-left">Equity %</th>
-                      <th className="py-2 px-4 font-semibold text-left">Investment Amount</th>
+              {/* Equity Financing */}
+              <tr className="border-b">
+                <td className="py-2 px-4">Equity Financing</td>
+                <td className="py-2 px-4">Common Stock</td>
+                <td className="py-2 px-4">{formatNumberWithCommas(equityFinancingShares)}</td>
+                <td className="py-2 px-4">{(equityFinancingShares / totalCapTableShares * 100).toFixed(2)}%</td>
+                <td className="py-2 px-4">{formatAsCurrency(equityFinancingInvestment)}</td>
+              </tr>
+
+                {safeInputs.map((safeInput) => {
+                  const safeShares = calculateEquityShares(safeInput);
+                  return (
+                    <tr key={safeInput.id} className="border-b">
+                      <td className="py-2 px-4">{safeInput.investorName}</td>
+                      <td className="py-2 px-4">{safeInput.type}</td>
+                      <td className="py-2 px-4">{formatNumberWithCommas(safeShares)}</td>
+                        <td className="py-2 px-4">
+                            {((safeShares / totalCapTableShares) * 100).toFixed(2)}%
+                        </td>
+                      <td className="py-2 px-4">{formatAsCurrency(safeInput.investmentAmount)}</td>
                     </tr>
-                  </thead>
-                  <tbody>
-                  {/* Founders Shares */}
-                  <tr className="border-b">
-                    <td className="py-2 px-4">Founders</td>
-                    <td className="py-2 px-4">Common Stock</td>
-                    <td className="py-2 px-4">{formatNumberWithCommas(foundersShares)}</td>
-                    <td className="py-2 px-4">{(foundersShares / totalCapTableShares * 100).toFixed(2)}%</td>
-                    <td className="py-2 px-4">-</td>
-                  </tr>
-                  {/* Employee Shares */}
-                  <tr className="border-b">
-                    <td className="py-2 px-4">Employee Pool</td>
-                    <td className="py-2 px-4">Equity</td>
-                    <td className="py-2 px-4">{formatNumberWithCommas(employeeShares)}</td>
-                    <td className="py-2 px-4">{(employeeShares / totalCapTableShares * 100).toFixed(2)}%</td>
-                    <td className="py-2 px-4">-</td>
-                  </tr>
-
-                  {/* Equity Financing */}
-                  <tr className="border-b">
-                    <td className="py-2 px-4">Equity Financing</td>
-                    <td className="py-2 px-4">Common Stock</td>
-                    <td className="py-2 px-4">{formatNumberWithCommas(equityFinancingShares)}</td>
-                    <td className="py-2 px-4">{(equityFinancingShares / totalCapTableShares * 100).toFixed(2)}%</td>
-                    <td className="py-2 px-4">{formatAsCurrency(equityFinancingInvestment)}</td>
-                  </tr>
-
-                    {safeInputs.map((safeInput) => {
-                      const safeShares = calculateEquityShares(safeInput);
-                      return (
-                        <tr key={safeInput.id} className="border-b">
-                          <td className="py-2 px-4">{safeInput.investorName}</td>
-                          <td className="py-2 px-4">{safeInput.type}</td>
-                          <td className="py-2 px-4">{formatNumberWithCommas(safeShares)}</td>
-                            <td className="py-2 px-4">
-                                {((safeShares / totalCapTableShares) * 100).toFixed(2)}%
-                            </td>
-                          <td className="py-2 px-4">{formatAsCurrency(safeInput.investmentAmount)}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
-        </>
-      )}
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
