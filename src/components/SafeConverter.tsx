@@ -110,10 +110,11 @@ const SafeConverter = () => {
 
   return (
     <div className="container py-10">
-        <h1 className="text-4xl font-bold text-center mb-8">
+        
+      <h1 className="text-4xl font-bold text-center mb-8">
             SAFE Conversion Calculator
         </h1>
-        
+
       <div className="flex w-full max-w-3xl mx-auto mb-6 space-x-4">
         <Card className="w-1/2 bg-card text-card-foreground shadow-md rounded-lg overflow-hidden">
             <CardHeader className="p-4">
@@ -214,7 +215,7 @@ const SafeConverter = () => {
         
         <div className="w-full max-w-3xl mx-auto mb-6 space-x-4">
       {safeInputs.map((safeInput, index) => (
-        <Card key={safeInput.id} className="bg-card text-card-foreground shadow-md rounded-lg overflow-hidden">
+        <Card key={safeInput.id} className="w-1/2 bg-card text-card-foreground shadow-md rounded-lg overflow-hidden">
           <CardHeader className="flex flex-row items-center justify-between p-4">
             <CardTitle className="text-lg font-semibold">{safeInput.type.toUpperCase()}</CardTitle>
             <Button variant="ghost" size="icon" onClick={() => removeSafeInput(safeInput.id)}>
