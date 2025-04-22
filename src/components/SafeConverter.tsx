@@ -84,6 +84,19 @@ const SafeConverter = () => {
     return safeShares;
   };
 
+  const calculatePostMoneyEquity = (safeInput: SafeInput): number => {
+    let safeShares = 0;
+    if (safeInput.type === 'Valuation Cap SAFE' && safeInput.valuationCap !== undefined) {
+      const effectiveValuation = Math.min(equityFinancingValuation, safeInput.valuationCap);
+      safeShares = (safeInput.investmentAmount / effectiveValuation);
+    } else if (safeInput.type === 'Discount SAFE' && safeInput.discountRate !== undefined) {
+      const effectiveValuation = equityFinancingValuation * (1 - (safeInput.discountRate / 100));
+      safeShares = (safeInput.investmentAmount / effectiveValuation);
+    }
+    return safeShares * 100;
+  };
+
+
   return (
     <div className="container py-10">
       <Card className="w-full max-w-3xl mx-auto bg-card text-card-foreground shadow-md rounded-lg overflow-hidden mb-6">
