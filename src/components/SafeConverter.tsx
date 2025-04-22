@@ -21,11 +21,10 @@ const SafeConverter = () => {
   const [safeInputs, setSafeInputs] = useState<SafeInput[]>([]);
   const [equityFinancingValuation, setEquityFinancingValuation] = useState<number>(10000000);
   const [equityFinancingInvestment, setEquityFinancingInvestment] = useState<number>(5000000);
-  const [companyValuation, setCompanyValuation] = useState<number>(1000000);
 
   const [totalShares, setTotalShares] = useState<number>(10000000);
   const [foundersShares, setFoundersShares] = useState<number>(2000000);
-  const [employeeEquity, setEmployeeEquity] = useState<number>(1000000);
+  const [employeeShares, setEmployeeShares] = useState<number>(1000000);
 
   const addSafeInput = (type: SafeInput['type']) => {
     const newSafeInput: SafeInput = {
@@ -78,18 +77,14 @@ const SafeConverter = () => {
   };
 
   const calculatePostMoneyEquity = (safeInput: SafeInput) => {
-      if (!equityFinancingValuation || !companyValuation) {
-          return 0;
-      }
-
       let effectiveValuation: number;
       if (safeInput.type === 'Valuation Cap SAFE' && safeInput.valuationCap !== undefined) {
-          effectiveValuation = Math.min(equityFinancingValuation, safeInput.valuationCap);
+        effectiveValuation = Math.min(equityFinancingValuation, safeInput.valuationCap);
       } else if (safeInput.type === 'Discount SAFE' && safeInput.discountRate !== undefined) {
-          effectiveValuation = equityFinancingValuation * (1 - (safeInput.discountRate / 100));
+        effectiveValuation = equityFinancingValuation / (1 - (safeInput.discountRate / 100));
       }
       else {
-          effectiveValuation = equityFinancingValuation;
+        effectiveValuation = equityFinancingValuation;
       }
     return (safeInput.investmentAmount / effectiveValuation) * 100;
   };
@@ -105,7 +100,7 @@ const SafeConverter = () => {
     <div className="container py-10">
         <Card className="w-full max-w-3xl mx-auto bg-card text-card-foreground shadow-md rounded-lg overflow-hidden mb-6">
             <CardHeader className="p-4">
-                <CardTitle className="text-xl font-semibold">Share Structure</CardTitle>
+                <CardTitle className="text-xl font-semibold">Company Structure</CardTitle>
             </CardHeader>
             <CardContent className="p-4">
                 <div className="grid gap-4">
@@ -131,14 +126,14 @@ const SafeConverter = () => {
                         }}
                         className="bg-input border rounded-md focus:ring-accent focus:border-accent"
                     />
-                    <Label htmlFor="employeeEquity">Employee Equity</Label>
+                    <Label htmlFor="employeeShares">Employee Shares</Label>
                     <Input
                         type="text"
-                        id="employeeEquity"
-                        value={formatNumberWithCommas(employeeEquity)}
+                        id="employeeShares"
+                        value={formatNumberWithCommas(employeeShares)}
                         onChange={(e) => {
                             const parsedValue = parseNumber(e.target.value);
-                            setEmployeeEquity(parsedValue !== undefined ? parsedValue : 0);
+                            setEmployeeShares(parsedValue !== undefined ? parsedValue : 0);
                         }}
                         className="bg-input border rounded-md focus:ring-accent focus:border-accent"
                     />
@@ -174,17 +169,6 @@ const SafeConverter = () => {
                             }}
                             className="bg-input border rounded-md focus:ring-accent focus:border-accent"
                         />
-            <Label htmlFor="companyValuation">Company Valuation at Conversion</Label>
-            <Input
-              type="text"
-              id="companyValuation"
-              value={formatAsCurrency(companyValuation)}
-              onChange={(e) => {
-                const parsedValue = parseNumber(e.target.value);
-                setCompanyValuation(parsedValue !== undefined ? parsedValue : 0);
-              }}
-              className="bg-input border rounded-md focus:ring-accent focus:border-accent"
-            />
           </div>
         </CardContent>
       </Card>
@@ -303,12 +287,12 @@ const SafeConverter = () => {
                           <td className="py-2 px-4">N/A</td>
                           <td className="py-2 px-4">{formatNumberWithCommas(foundersShares)}</td>
                       </tr>
-                      {/* Employee Equity */}
+                      {/* Employee Shares */}
                       <tr className="border-b">
                           <td className="py-2 px-4">Employee Pool</td>
                           <td className="py-2 px-4">Equity</td>
                           <td className="py-2 px-4">N/A</td>
-                          <td className="py-2 px-4">{formatNumberWithCommas(employeeEquity)}</td>
+                          <td className="py-2 px-4">{formatNumberWithCommas(employeeShares)}</td>
                       </tr>
                     {safeInputs.map((safeInput) => (
                       <tr key={safeInput.id} className="border-b">
