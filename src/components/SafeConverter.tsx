@@ -91,6 +91,20 @@ const SafeConverter = () => {
     return safeOwnership;
   };
 
+    const calculateFoundersEquity = () => {
+        if (!totalShares) {
+            return 0;
+        }
+        return (foundersShares / totalShares) * 100;
+    };
+
+    const calculateEmployeeEquity = () => {
+        if (!totalShares) {
+            return 0;
+        }
+        return (employeeShares / totalShares) * 100;
+    };
+
   const calculateEquityFinancingOwnership = () => {
     if (!equityFinancingValuation) {
       return 0;
@@ -100,48 +114,48 @@ const SafeConverter = () => {
 
   return (
     <div className="container py-10">
-        <Card className="w-full max-w-3xl mx-auto bg-card text-card-foreground shadow-md rounded-lg overflow-hidden mb-6">
-            <CardHeader className="p-4">
-                <CardTitle className="text-xl font-semibold">Company Structure</CardTitle>
-            </CardHeader>
-            <CardContent className="p-4">
-                <div className="grid gap-4">
-                    <Label htmlFor="totalShares">Total Shares</Label>
-                    <Input
-                        type="text"
-                        id="totalShares"
-                        value={formatNumberWithCommas(totalShares)}
-                        onChange={(e) => {
-                            const parsedValue = parseNumber(e.target.value);
-                            setTotalShares(parsedValue !== undefined ? parsedValue : 0);
-                        }}
-                        className="bg-input border rounded-md focus:ring-accent focus:border-accent"
-                    />
-                    <Label htmlFor="foundersShares">Founders Shares</Label>
-                    <Input
-                        type="text"
-                        id="foundersShares"
-                        value={formatNumberWithCommas(foundersShares)}
-                        onChange={(e) => {
-                            const parsedValue = parseNumber(e.target.value);
-                            setFoundersShares(parsedValue !== undefined ? parsedValue : 0);
-                        }}
-                        className="bg-input border rounded-md focus:ring-accent focus:border-accent"
-                    />
-                    <Label htmlFor="employeeShares">Employee Shares</Label>
-                    <Input
-                        type="text"
-                        id="employeeShares"
-                        value={formatNumberWithCommas(employeeShares)}
-                        onChange={(e) => {
-                            const parsedValue = parseNumber(e.target.value);
-                            setEmployeeShares(parsedValue !== undefined ? parsedValue : 0);
-                        }}
-                        className="bg-input border rounded-md focus:ring-accent focus:border-accent"
-                    />
-                </div>
-            </CardContent>
-        </Card>
+      <Card className="w-full max-w-3xl mx-auto bg-card text-card-foreground shadow-md rounded-lg overflow-hidden mb-6">
+        <CardHeader className="p-4">
+          <CardTitle className="text-xl font-semibold">Company Structure</CardTitle>
+        </CardHeader>
+        <CardContent className="p-4">
+          <div className="grid gap-4">
+            <Label htmlFor="totalShares">Total Shares</Label>
+            <Input
+              type="text"
+              id="totalShares"
+              value={formatNumberWithCommas(totalShares)}
+              onChange={(e) => {
+                const parsedValue = parseNumber(e.target.value);
+                setTotalShares(parsedValue !== undefined ? parsedValue : 0);
+              }}
+              className="bg-input border rounded-md focus:ring-accent focus:border-accent"
+            />
+            <Label htmlFor="foundersShares">Founders Shares</Label>
+            <Input
+              type="text"
+              id="foundersShares"
+              value={formatNumberWithCommas(foundersShares)}
+              onChange={(e) => {
+                const parsedValue = parseNumber(e.target.value);
+                setFoundersShares(parsedValue !== undefined ? parsedValue : 0);
+              }}
+              className="bg-input border rounded-md focus:ring-accent focus:border-accent"
+            />
+            <Label htmlFor="employeeShares">Employee Pool</Label>
+            <Input
+              type="text"
+              id="employeeShares"
+              value={formatNumberWithCommas(employeeShares)}
+              onChange={(e) => {
+                const parsedValue = parseNumber(e.target.value);
+                setEmployeeShares(parsedValue !== undefined ? parsedValue : 0);
+              }}
+              className="bg-input border rounded-md focus:ring-accent focus:border-accent"
+            />
+          </div>
+        </CardContent>
+      </Card>
 
       <Card className="w-full max-w-3xl mx-auto bg-card text-card-foreground shadow-md rounded-lg overflow-hidden mb-6">
         <CardHeader className="p-4">
@@ -160,17 +174,17 @@ const SafeConverter = () => {
               }}
               className="bg-input border rounded-md focus:ring-accent focus:border-accent"
             />
-             <Label htmlFor="equityFinancingInvestment">Investment Amount</Label>
-                        <Input
-                            type="text"
-                            id="equityFinancingInvestment"
-                            value={formatAsCurrency(equityFinancingInvestment)}
-                            onChange={(e) => {
-                                const parsedValue = parseNumber(e.target.value);
-                                setEquityFinancingInvestment(parsedValue !== undefined ? parsedValue : 0);
-                            }}
-                            className="bg-input border rounded-md focus:ring-accent focus:border-accent"
-                        />
+            <Label htmlFor="equityFinancingInvestment">Investment Amount</Label>
+            <Input
+              type="text"
+              id="equityFinancingInvestment"
+              value={formatAsCurrency(equityFinancingInvestment)}
+              onChange={(e) => {
+                const parsedValue = parseNumber(e.target.value);
+                setEquityFinancingInvestment(parsedValue !== undefined ? parsedValue : 0);
+              }}
+              className="bg-input border rounded-md focus:ring-accent focus:border-accent"
+            />
           </div>
         </CardContent>
       </Card>
@@ -244,7 +258,7 @@ const SafeConverter = () => {
                   </>
                 )}
                 <div className="text-right">
-                  Equity Post Conversion: {(calculatePostMoneyEquity(safeInput)).toFixed(2)}%
+                  Equity %: {(calculatePostMoneyEquity(safeInput)).toFixed(2)}%
                 </div>
               </div>
             </CardContent>
@@ -269,6 +283,7 @@ const SafeConverter = () => {
           <Card className="w-full max-w-3xl mx-auto bg-card text-card-foreground shadow-md rounded-lg overflow-hidden">
             <CardHeader className="p-4">
               <CardTitle className="text-xl font-semibold">Capitalization Table</CardTitle>
+                <div style={{fontSize: '0.8em', fontStyle: 'italic'}}>(Post Conversion)</div>
             </CardHeader>
             <CardContent className="p-4">
               <div className="overflow-x-auto">
@@ -286,14 +301,14 @@ const SafeConverter = () => {
                       <tr className="border-b">
                           <td className="py-2 px-4">Founders</td>
                           <td className="py-2 px-4">Common Stock</td>
-                          <td className="py-2 px-4">N/A</td>
+                          <td className="py-2 px-4">{(calculateFoundersEquity()).toFixed(2)}%</td>
                           <td className="py-2 px-4">-</td>
                       </tr>
                       {/* Employee Shares */}
                       <tr className="border-b">
                           <td className="py-2 px-4">Employee Pool</td>
                           <td className="py-2 px-4">Equity</td>
-                          <td className="py-2 px-4">N/A</td>
+                          <td className="py-2 px-4">{(calculateEmployeeEquity()).toFixed(2)}%</td>
                           <td className="py-2 px-4">-</td>
                       </tr>
                     {safeInputs.map((safeInput) => (
