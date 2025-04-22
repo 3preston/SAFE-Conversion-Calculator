@@ -19,7 +19,7 @@ type SafeInput = {
 
 const SafeConverter = () => {
   const [safeInputs, setSafeInputs] = useState<SafeInput[]>([]);
-  const [equityFinancingValuation, setEquityFinancingValuation] = useState<number>(3000000);
+  const [equityFinancingValuation, setEquityFinancingValuation] = useState<number>(10000000);
   const [equityFinancingInvestment, setEquityFinancingInvestment] = useState<number>(3000000);
 
   const [totalShares, setTotalShares] = useState<number>(10000000);
@@ -72,19 +72,28 @@ const SafeConverter = () => {
         return isNaN(parsed) ? undefined : parsed;
     };
 
-  const calculateEquityShares = (safeInput: SafeInput): number => {
-    let safeShares = 0;
-    if (safeInput.type === 'Valuation Cap SAFE' && safeInput.valuationCap !== undefined) {
-      safeShares = safeInput.investmentAmount / Math.max(safeInput.valuationCap, equityFinancingValuation) * totalShares;
-    } else if (safeInput.type === 'Discount SAFE' && safeInput.discountRate !== undefined) {
-          safeShares = safeInput.investmentAmount / (equityFinancingValuation * (1 - (safeInput.discountRate / 100))) * totalShares;
-    }
-    return safeShares;
-  };
+    const calculateEquityShares = (safeInput: SafeInput): number => {
+        let safeShares = 0;
+        if (safeInput.type === 'Valuation Cap SAFE' && safeInput.valuationCap !== undefined) {
+            safeShares = safeInput.investmentAmount / Math.max(safeInput.valuationCap, equityFinancingValuation) * totalShares;
+        } else if (safeInput.type === 'Discount SAFE' && safeInput.discountRate !== undefined) {
+            safeShares = safeInput.investmentAmount / (equityFinancingValuation * (1 - (safeInput.discountRate / 100))) * totalShares;
+        }
+        return safeShares;
+    };
 
     const equityFinancingShares = equityFinancingInvestment / equityFinancingValuation * totalShares;
 
-    const totalCapTableShares = totalShares + equityFinancingShares + safeInputs.reduce((acc, safeInput) => acc + calculateEquityShares(safeInput), 0);
+    const calculateTotalShares = () => {
+        let safeSharesTotal = 0;
+        safeInputs.forEach((safeInput) => {
+            safeSharesTotal += calculateEquityShares(safeInput);
+        });
+        return totalShares + equityFinancingShares + safeSharesTotal;
+    }
+
+    const totalCapTableShares = calculateTotalShares();
+
 
   return (
     <div className="container py-10">
