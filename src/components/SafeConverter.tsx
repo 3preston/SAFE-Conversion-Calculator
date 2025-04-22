@@ -23,7 +23,7 @@ const SafeConverter = () => {
     const [equityFinancingInvestment, setEquityFinancingInvestment] = useState<number>(3000000);
 
     const [totalShares, setTotalShares] = useState<number>(10000000);
-    const [foundersShares, setFoundersShares] = useState<number>(2000000);
+    const [foundersShares, setFoundersShares] = useState<number>(5000000);
     const [employeeShares, setEmployeeShares] = useState<number>(1000000);
 
     const addSafeInput = (type: 'Valuation Cap SAFE' | 'Discount SAFE') => {
@@ -110,9 +110,6 @@ const SafeConverter = () => {
 
     return (
         <div className="container py-10">
-            <h1 className="text-4xl font-bold text-center mb-8">
-                SAFE Conversion Calculator
-            </h1>
 
             <div className="flex w-full max-w-3xl mx-auto mb-6 space-x-4">
                 <Card className="w-1/2 bg-card text-card-foreground shadow-md rounded-lg overflow-hidden">
@@ -143,7 +140,7 @@ const SafeConverter = () => {
                                 }}
                                 className="bg-input border rounded-md focus:ring-accent focus:border-accent"
                             />
-                            <Label htmlFor="employeeShares">Employee Shares</Label>
+                            <Label htmlFor="employeeShares">Employee Pool</Label>
                             <Input
                                 type="text"
                                 id="employeeShares"
