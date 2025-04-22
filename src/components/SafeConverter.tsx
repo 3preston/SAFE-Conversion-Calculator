@@ -20,7 +20,7 @@ type SafeInput = {
 const SafeConverter = () => {
   const [safeInputs, setSafeInputs] = useState<SafeInput[]>([]);
   const [equityFinancingValuation, setEquityFinancingValuation] = useState<number>(3000000);
-  const [equityFinancingInvestment, setEquityFinancingInvestment] = useState<number>(2500000);
+  const [equityFinancingInvestment, setEquityFinancingInvestment] = useState<number>(3000000);
 
   const [totalShares, setTotalShares] = useState<number>(10000000);
   const [foundersShares, setFoundersShares] = useState<number>(2000000);
@@ -67,40 +67,24 @@ const SafeConverter = () => {
     return value.toLocaleString('en-US');
   };
 
-  const parseNumber = (value: string): number | undefined => {
-    const parsed = Number(value.replace(/[^0-9.-]+/g, ''));
-    return isNaN(parsed) ? undefined : parsed;
-  };
+    const parseNumber = (value: string): number | undefined => {
+        const parsed = Number(value.replace(/[^0-9.-]+/g, ''));
+        return isNaN(parsed) ? undefined : parsed;
+    };
 
   const calculateEquityShares = (safeInput: SafeInput): number => {
     let safeShares = 0;
     if (safeInput.type === 'Valuation Cap SAFE' && safeInput.valuationCap !== undefined) {
-      const effectiveValuation = Math.min(safeInput.valuationCap, equityFinancingValuation);
-      safeShares = safeInput.investmentAmount / effectiveValuation * totalShares;
+      safeShares = safeInput.investmentAmount / Math.max(safeInput.valuationCap, equityFinancingValuation) * totalShares;
     } else if (safeInput.type === 'Discount SAFE' && safeInput.discountRate !== undefined) {
-      const effectiveValuation = equityFinancingValuation * (1 - (safeInput.discountRate / 100));
-      safeShares = safeInput.investmentAmount / effectiveValuation * totalShares;
+          safeShares = safeInput.investmentAmount / (equityFinancingValuation * (1 - (safeInput.discountRate / 100))) * totalShares;
     }
     return safeShares;
   };
 
-  const calculatePostMoneyEquity = (safeInput: SafeInput): number => {
-    let safeShares = 0;
-    if (safeInput.type === 'Valuation Cap SAFE' && safeInput.valuationCap !== undefined) {
-      const effectiveValuation = Math.min(safeInput.valuationCap, equityFinancingValuation);
-      safeShares = (safeInput.investmentAmount / effectiveValuation);
-    } else if (safeInput.type === 'Discount SAFE' && safeInput.discountRate !== undefined) {
-      const effectiveValuation = equityFinancingValuation * (1 - (safeInput.discountRate / 100));
-      safeShares = (safeInput.investmentAmount / effectiveValuation);
-    }
-    return safeShares * 100;
-  };
+    const equityFinancingShares = equityFinancingInvestment / equityFinancingValuation * totalShares;
 
-
-  const equityFinancingShares = equityFinancingInvestment / equityFinancingValuation * totalShares;
-
-  const totalCapTableShares = totalShares + equityFinancingShares + safeInputs.reduce((acc, safeInput) => acc + calculateEquityShares(safeInput), 0);
-
+    const totalCapTableShares = totalShares + equityFinancingShares + safeInputs.reduce((acc, safeInput) => acc + calculateEquityShares(safeInput), 0);
 
   return (
     <div className="container py-10">
@@ -179,7 +163,7 @@ const SafeConverter = () => {
         </CardContent>
       </Card>
 
-      {safeInputs.map((safeInput) => (
+      {safeInputs.map((safeInput, index) => (
         <Card key={safeInput.id} className="bg-card text-card-foreground shadow-md rounded-lg overflow-hidden">
           <CardHeader className="flex flex-row items-center justify-between p-4">
             <CardTitle className="text-lg font-semibold">{safeInput.type.toUpperCase()}</CardTitle>
@@ -312,16 +296,14 @@ const SafeConverter = () => {
                     <td className="py-2 px-4">-</td>
                   </tr>
 
-                    {/* Equity Financing */}
-                    <tr className="border-b">
-                      <td className="py-2 px-4">Equity Financing</td>
-                      <td className="py-2 px-4">Common Stock</td>
-                      <td className="py-2 px-4">{formatNumberWithCommas(equityFinancingShares)}</td>
-                      <td className="py-2 px-4">
-                        {(equityFinancingShares / totalCapTableShares * 100).toFixed(2)}%
-                      </td>
-                      <td className="py-2 px-4">{formatAsCurrency(equityFinancingInvestment)}</td>
-                    </tr>
+                  {/* Equity Financing */}
+                  <tr className="border-b">
+                    <td className="py-2 px-4">Equity Financing</td>
+                    <td className="py-2 px-4">Common Stock</td>
+                    <td className="py-2 px-4">{formatNumberWithCommas(equityFinancingShares)}</td>
+                    <td className="py-2 px-4">{(equityFinancingShares / totalCapTableShares * 100).toFixed(2)}%</td>
+                    <td className="py-2 px-4">{formatAsCurrency(equityFinancingInvestment)}</td>
+                  </tr>
 
                     {safeInputs.map((safeInput) => {
                       const safeShares = calculateEquityShares(safeInput);
@@ -330,9 +312,9 @@ const SafeConverter = () => {
                           <td className="py-2 px-4">{safeInput.investorName}</td>
                           <td className="py-2 px-4">{safeInput.type}</td>
                           <td className="py-2 px-4">{formatNumberWithCommas(safeShares)}</td>
-                          <td className="py-2 px-4">
-                            {(safeShares / totalCapTableShares * 100).toFixed(2)}%
-                          </td>
+                            <td className="py-2 px-4">
+                                {((safeShares / totalCapTableShares) * 100).toFixed(2)}%
+                            </td>
                           <td className="py-2 px-4">{formatAsCurrency(safeInput.investmentAmount)}</td>
                         </tr>
                       );
