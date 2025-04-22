@@ -20,24 +20,20 @@ type SafeInput = {
 const SafeConverter = () => {
   const [safeInputs, setSafeInputs] = useState<SafeInput[]>([]);
   const [equityFinancingValuation, setEquityFinancingValuation] = useState<number>(3000000);
-  const [equityFinancingInvestment, setEquityFinancingInvestment] = useState<number>(3000000);
+  const [equityFinancingInvestment, setEquityFinancingInvestment] = useState<number>(2500000);
 
   const [totalShares, setTotalShares] = useState<number>(10000000);
   const [foundersShares, setFoundersShares] = useState<number>(2000000);
   const [employeeShares, setEmployeeShares] = useState<number>(1000000);
 
-  const addSafeInput = (type: SafeInput['type']) => {
+  const addSafeInput = () => {
     const newSafeInput: SafeInput = {
       id: Math.random().toString(36).substring(7),
       investorName: `Investor ${safeInputs.length + 1}`,
-      type,
+      type: 'Valuation Cap SAFE',
       investmentAmount: 100000,
+      valuationCap: 1000000,
     };
-    if (type === 'Valuation Cap SAFE') {
-      newSafeInput.valuationCap = 1000000;
-    } else if (type === 'Discount SAFE') {
-      newSafeInput.discountRate = 20;
-    }
     setSafeInputs([...safeInputs, newSafeInput]);
   };
 
@@ -74,21 +70,6 @@ const SafeConverter = () => {
   const parseNumber = (value: string): number | undefined => {
     const parsed = Number(value.replace(/[^0-9.-]+/g, ''));
     return isNaN(parsed) ? undefined : parsed;
-  };
-
-  const calculatePostMoneyEquity = (safeInput: SafeInput) => {
-    let effectiveValuation: number;
-    if (safeInput.type === 'Valuation Cap SAFE' && safeInput.valuationCap !== undefined) {
-      effectiveValuation = Math.min(equityFinancingValuation, safeInput.valuationCap);
-    } else if (safeInput.type === 'Discount SAFE' && safeInput.discountRate !== undefined) {
-      effectiveValuation = equityFinancingValuation * (1 - (safeInput.discountRate / 100));
-    }
-    else {
-      effectiveValuation = equityFinancingValuation;
-    }
-
-    const safeOwnership = safeInput.investmentAmount / effectiveValuation;
-    return safeOwnership;
   };
 
   return (
@@ -168,87 +149,97 @@ const SafeConverter = () => {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {safeInputs.map((safeInput) => (
-          <Card key={safeInput.id} className="bg-card text-card-foreground shadow-md rounded-lg overflow-hidden">
-            <CardHeader className="flex flex-row items-center justify-between p-4">
-              <CardTitle className="text-lg font-semibold">{safeInput.type.toUpperCase()}</CardTitle>
-              <Button variant="ghost" size="icon" onClick={() => removeSafeInput(safeInput.id)}>
-                <X className="h-4 w-4" />
-              </Button>
-            </CardHeader>
-            <CardContent className="p-4">
-              <div className="grid gap-4">
-                <Label htmlFor={`investorName-${safeInput.id}`}>Investor Name</Label>
-                <Input
-                  type="text"
-                  id={`investorName-${safeInput.id}`}
-                  value={safeInput.investorName}
-                  onChange={(e) => updateSafeInput(safeInput.id, { investorName: e.target.value })}
-                  className="bg-input border rounded-md focus:ring-accent focus:border-accent"
-                />
-                {(safeInput.type === 'Valuation Cap SAFE' || safeInput.type === 'Discount SAFE') && (
-                  <>
-                    <div className="grid grid-cols-1 gap-2">
-                      {safeInput.type === 'Valuation Cap SAFE' && (
-                        <div>
-                          <Label htmlFor={`valuationCap-${safeInput.id}`}>Valuation Cap</Label>
-                          <Input
-                            type="text"
-                            id={`valuationCap-${safeInput.id}`}
-                            value={formatAsCurrency(safeInput.valuationCap)}
-                            onChange={(e) => {
-                              const parsedValue = parseNumber(e.target.value);
-                              updateSafeInput(safeInput.id, { valuationCap: parsedValue });
-                            }}
-                            className="bg-input border rounded-md focus:ring-accent focus:border-accent"
-                          />
-                        </div>
-                      )}
-                      {safeInput.type === 'Discount SAFE' && (
-                        <div>
-                          <Label htmlFor={`discountRate-${safeInput.id}`}>Discount Rate</Label>
-                          <Input
-                            type="text"
-                            id={`discountRate-${safeInput.id}`}
-                            value={(safeInput.discountRate ?? 0).toString()}
-                            onChange={(e) => {
-                              const parsedValue = parseNumber(e.target.value);
-                              updateSafeInput(safeInput.id, { discountRate: parsedValue });
-                            }}
-                            className="bg-input border rounded-md focus:ring-accent focus:border-accent"
-                          />
-                        </div>
-                      )}
+      {safeInputs.map((safeInput) => (
+        <Card key={safeInput.id} className="bg-card text-card-foreground shadow-md rounded-lg overflow-hidden">
+          <CardHeader className="flex flex-row items-center justify-between p-4">
+            <CardTitle className="text-lg font-semibold">{safeInput.type.toUpperCase()}</CardTitle>
+            <Button variant="ghost" size="icon" onClick={() => removeSafeInput(safeInput.id)}>
+              <X className="h-4 w-4" />
+            </Button>
+          </CardHeader>
+          <CardContent className="p-4">
+            <div className="grid gap-4">
+              <Label htmlFor={`investorName-${safeInput.id}`}>Investor Name</Label>
+              <Input
+                type="text"
+                id={`investorName-${safeInput.id}`}
+                value={safeInput.investorName}
+                onChange={(e) => updateSafeInput(safeInput.id, { investorName: e.target.value })}
+                className="bg-input border rounded-md focus:ring-accent focus:border-accent"
+              />
+              {(safeInput.type === 'Valuation Cap SAFE' || safeInput.type === 'Discount SAFE') && (
+                <>
+                  <div className="grid grid-cols-1 gap-2">
+                    {safeInput.type === 'Valuation Cap SAFE' && (
                       <div>
-                        <Label htmlFor={`investmentAmount-${safeInput.id}`}>Investment Amount</Label>
+                        <Label htmlFor={`valuationCap-${safeInput.id}`}>Valuation Cap</Label>
                         <Input
                           type="text"
-                          id={`investmentAmount-${safeInput.id}`}
-                          value={formatAsCurrency(safeInput.investmentAmount)}
+                          id={`valuationCap-${safeInput.id}`}
+                          value={formatAsCurrency(safeInput.valuationCap)}
                           onChange={(e) => {
                             const parsedValue = parseNumber(e.target.value);
-                            updateSafeInput(safeInput.id, { investmentAmount: parsedValue });
+                            updateSafeInput(safeInput.id, { valuationCap: parsedValue });
                           }}
                           className="bg-input border rounded-md focus:ring-accent focus:border-accent"
                         />
                       </div>
+                    )}
+                    {safeInput.type === 'Discount SAFE' && (
+                      <div>
+                        <Label htmlFor={`discountRate-${safeInput.id}`}>Discount Rate</Label>
+                        <Input
+                          type="text"
+                          id={`discountRate-${safeInput.id}`}
+                          value={(safeInput.discountRate ?? 0).toString()}
+                          onChange={(e) => {
+                            const parsedValue = parseNumber(e.target.value);
+                            updateSafeInput(safeInput.id, { discountRate: parsedValue });
+                          }}
+                          className="bg-input border rounded-md focus:ring-accent focus:border-accent"
+                        />
+                      </div>
+                    )}
+                    <div>
+                      <Label htmlFor={`investmentAmount-${safeInput.id}`}>Investment Amount</Label>
+                      <Input
+                        type="text"
+                        id={`investmentAmount-${safeInput.id}`}
+                        value={formatAsCurrency(safeInput.investmentAmount)}
+                        onChange={(e) => {
+                          const parsedValue = parseNumber(e.target.value);
+                          updateSafeInput(safeInput.id, { investmentAmount: parsedValue });
+                        }}
+                        className="bg-input border rounded-md focus:ring-accent focus:border-accent"
+                      />
                     </div>
-                  </>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+                  </div>
+                </>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      ))}
 
       <Separator className="my-6" />
 
       <div className="flex justify-center space-x-4">
-        <Button onClick={() => addSafeInput('Valuation Cap SAFE')} className="bg-accent text-accent-foreground hover:bg-accent-foreground hover:text-accent rounded-full">
+        <Button onClick={() => setSafeInputs(prev => [...prev, {
+          id: Math.random().toString(36).substring(7),
+          investorName: `Investor ${safeInputs.length + 1}`,
+          type: 'Valuation Cap SAFE',
+          investmentAmount: 100000,
+          valuationCap: 1000000,
+        }])} className="bg-accent text-accent-foreground hover:bg-accent-foreground hover:text-accent rounded-full">
           <Plus className="h-4 w-4 mr-2" /> Valuation Cap SAFE
         </Button>
-        <Button onClick={() => addSafeInput('Discount SAFE')} className="bg-accent text-accent-foreground hover:bg-accent-foreground hover:text-accent rounded-full">
+        <Button onClick={() => setSafeInputs(prev => [...prev, {
+          id: Math.random().toString(36).substring(7),
+          investorName: `Investor ${safeInputs.length + 1}`,
+          type: 'Discount SAFE',
+          investmentAmount: 100000,
+          discountRate: 20,
+        }])} className="bg-accent text-accent-foreground hover:bg-accent-foreground hover:text-accent rounded-full">
           <Plus className="h-4 w-4 mr-2" /> Discount SAFE
         </Button>
       </div>
@@ -259,8 +250,8 @@ const SafeConverter = () => {
           <Card className="w-full max-w-3xl mx-auto bg-card text-card-foreground shadow-md rounded-lg overflow-hidden">
             <CardHeader className="p-4">
               <CardTitle className="text-xl font-semibold">Capitalization Table</CardTitle>
-                <div style={{fontSize: '0.8em', fontStyle: 'italic'}}>(Post Conversion)</div>
             </CardHeader>
+            <div style={{ fontSize: '0.8em', fontStyle: 'italic', textAlign: 'center' }}>(Post Conversion)</div>
             <CardContent className="p-4">
               <div className="overflow-x-auto">
                 <table className="min-w-full table-auto">
@@ -273,51 +264,77 @@ const SafeConverter = () => {
                     </tr>
                   </thead>
                   <tbody>
-                      {/* Founders Shares */}
-                      <tr className="border-b">
-                          <td className="py-2 px-4">Founders</td>
-                          <td className="py-2 px-4">Common Stock</td>
-                          <td className="py-2 px-4">{(foundersShares / totalShares * 100).toFixed(2)}%</td>
-                          <td className="py-2 px-4">-</td>
+                    {/* Founders Shares */}
+                    <tr className="border-b">
+                      <td className="py-2 px-4">Founders</td>
+                      <td className="py-2 px-4">Common Stock</td>
+                      <td className="py-2 px-4">{(foundersShares / totalShares * 100).toFixed(2)}%</td>
+                      <td className="py-2 px-4">-</td>
+                    </tr>
+                    {/* Employee Shares */}
+                    <tr className="border-b">
+                      <td className="py-2 px-4">Employee Pool</td>
+                      <td className="py-2 px-4">Equity</td>
+                      <td className="py-2 px-4">{(employeeShares / totalShares * 100).toFixed(2)}%</td>
+                      <td className="py-2 px-4">-</td>
+                    </tr>
+
+                    {/* Equity Financing */}
+                    <tr className="border-b">
+                      <td className="py-2 px-4">Equity Financing</td>
+                      <td className="py-2 px-4">Common Stock</td>
+                      <td className="py-2 px-4">
+                        {(() => {
+                          const equityShares = (equityFinancingInvestment / equityFinancingValuation) * totalShares;
+                          return ((equityShares / (totalShares + equityShares + safeInputs.reduce((acc, safeInput) => {
+                            if (safeInput.type === 'Valuation Cap SAFE' && safeInput.valuationCap !== undefined) {
+                              const effectiveValuation = Math.min(equityFinancingValuation, safeInput.valuationCap);
+                              return acc + (safeInput.investmentAmount / effectiveValuation) * totalShares;
+                            } else if (safeInput.type === 'Discount SAFE' && safeInput.discountRate !== undefined) {
+                              const effectiveValuation = equityFinancingValuation * (1 - (safeInput.discountRate / 100));
+                              return acc + (safeInput.investmentAmount / effectiveValuation) * totalShares;
+                            }
+                            return acc;
+                          }, 0))) * 100).toFixed(2) + '%';
+                        })()}
+                      </td>
+                      <td className="py-2 px-4">{formatAsCurrency(equityFinancingInvestment)}</td>
+                    </tr>
+
+                    {safeInputs.map((safeInput) => (
+                      <tr key={safeInput.id} className="border-b">
+                        <td className="py-2 px-4">{safeInput.investorName}</td>
+                        <td className="py-2 px-4">{safeInput.type}</td>
+                        <td className="py-2 px-4">
+                          {(() => {
+                            let safeShares;
+                            if (safeInput.type === 'Valuation Cap SAFE' && safeInput.valuationCap !== undefined) {
+                              const effectiveValuation = Math.min(equityFinancingValuation, safeInput.valuationCap);
+                              safeShares = (safeInput.investmentAmount / effectiveValuation) * totalShares;
+                            } else if (safeInput.type === 'Discount SAFE' && safeInput.discountRate !== undefined) {
+                              const effectiveValuation = equityFinancingValuation * (1 - (safeInput.discountRate / 100));
+                              safeShares = (safeInput.investmentAmount / effectiveValuation) * totalShares;
+                            } else {
+                              safeShares = 0;
+                            }
+                            const totalEquityShares = equityFinancingInvestment / equityFinancingValuation * totalShares;
+
+                            return ((safeShares / (totalShares + totalEquityShares + safeInputs.reduce((acc, safe) => {
+                              let shares = 0;
+                              if (safe.type === 'Valuation Cap SAFE' && safe.valuationCap !== undefined) {
+                                const effectiveValuation = Math.min(equityFinancingValuation, safe.valuationCap);
+                                shares = (safe.investmentAmount / effectiveValuation) * totalShares;
+                              } else if (safe.type === 'Discount SAFE' && safe.discountRate !== undefined) {
+                                const effectiveValuation = equityFinancingValuation * (1 - (safe.discountRate / 100));
+                                shares = (safe.investmentAmount / effectiveValuation) * totalShares;
+                              }
+                              return acc + shares;
+                            }, 0))) * 100).toFixed(2) + '%';
+                          })()}
+                        </td>
+                        <td className="py-2 px-4">{formatAsCurrency(safeInput.investmentAmount)}</td>
                       </tr>
-                      {/* Employee Shares */}
-                      <tr className="border-b">
-                          <td className="py-2 px-4">Employee Pool</td>
-                          <td className="py-2 px-4">Equity</td>
-                          <td className="py-2 px-4">{(employeeShares / totalShares * 100).toFixed(2)}%</td>
-                          <td className="py-2 px-4">-</td>
-                      </tr>
-
-                      {/* Equity Financing */}
-                      <tr className="border-b">
-                          <td className="py-2 px-4">Equity Financing</td>
-                          <td className="py-2 px-4">Common Stock</td>
-                          <td className="py-2 px-4">{(equityFinancingInvestment / equityFinancingValuation * 100).toFixed(2)}%</td>
-                          <td className="py-2 px-4">{formatAsCurrency(equityFinancingInvestment)}</td>
-                      </tr>
-                    {safeInputs.map((safeInput) => {
-
-                      let effectiveValuation: number;
-                      if (safeInput.type === 'Valuation Cap SAFE' && safeInput.valuationCap !== undefined) {
-                        effectiveValuation = Math.min(equityFinancingValuation, safeInput.valuationCap);
-                      } else if (safeInput.type === 'Discount SAFE' && safeInput.discountRate !== undefined) {
-                        effectiveValuation = equityFinancingValuation * (1 - (safeInput.discountRate / 100));
-                      }
-                       else {
-                           effectiveValuation = equityFinancingValuation;
-                       }
-
-
-                      const equity = safeInput.investmentAmount / effectiveValuation;
-                      return (
-                        <tr key={safeInput.id} className="border-b">
-                          <td className="py-2 px-4">{safeInput.investorName}</td>
-                          <td className="py-2 px-4">{safeInput.type}</td>
-                          <td className="py-2 px-4">{(equity * 100).toFixed(2)}%</td>
-                          <td className="py-2 px-4">{formatAsCurrency(safeInput.investmentAmount)}</td>
-                        </tr>
-                      );
-                    })}
+                    ))}
                   </tbody>
                 </table>
               </div>
